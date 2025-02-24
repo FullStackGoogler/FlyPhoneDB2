@@ -1,0 +1,888 @@
+GenerateVisualizations <- function(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor) {
+  if(doMultivis) {
+    doMultiVisualization(pathwayObj)
+  } else {
+    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor)
+  }
+}
+
+doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor) {
+  counts <- NULL
+  metadata <- NULL
+
+  counts_split <- NULL
+  metadata_split <- NULL
+
+  multiple_samples <- FALSE # Whether or not we analyse more than one dataset #TODO: Could pass in from GenerateVis(); some lines may be redundant
+
+  metadata <- read.csv(paste0(metadata_fn)) %>%
+    rename("celltype" = cluster)
+
+  if("LibraryID" %in% colnames(metadata)) {
+    multiple_samples <- TRUE
+    metadata_split <- split(metadata, metadata$LibraryID)
+  }
+
+  # Read in Counts
+  file_type = tools::file_ext(counts_fn)
+
+  if(identical(file_type, "txt")) { # Textfile
+    # TODO: Potentially replace with read_delim() for auto-detection of sep symbol
+    #counts <- read_delim(paste0(counts_fn))
+    counts <- read.table(paste0(counts_fn), header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
+  } else if(identical(file_type, "csv")) { # CSV file
+    counts <- read.csv(paste0(counts_fn), row.names = 1, check.names = FALSE)
+  } else {
+    stop("Unsupported filetype. Please upload either a .CSV or space-delimited .TXT file.")
+  }
+
+  if(multiple_samples) { # multi sample without DEG provided
+    counts_split <- splitCounts(metadata_split, counts)
+
+    for(i in seq_along(counts_split)) {
+      #TODO: Can just initialize seuratObj here and pass in to functions that use it
+      HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID)
+      DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID)
+    }
+  } else { # single sample
+      #TODO: Can just initialize seuratObj here and pass in to functions that use it
+      HeatmapSingleSample(counts, metadata, pathwayObj, "") #TODO: Should single sample have a LibraryID somewhere?
+      DotPlotSingleSample(counts, metadata, pathwayObj, "")
+  }
+
+  # Can uncomment if non filtered long interaction files are wanted
+  #filelist_long <- list.files("output/interactions/interactions_long", full.names = TRUE)
+  filelist_long_filtered <- list.files("output/interactions/interactions_long_filtered", full.names = TRUE)
+  #filelist <- c(filelist_long, filelist_long_filtered)
+  filelist <- filelist_long_filtered
+  for(curr_file in filelist) {
+    CirclePlotSingleSample(pathwayObj, curr_file)
+    ChordDiagramSingleSample(curr_file)
+  }
+
+  InteractionStrengthSingleSample(filelist)
+}
+
+doMultiVisualization <- function(pathwayObj) {
+  data_path <- "output/interactions/interactions_multi/results.xlsx"
+
+  ChordDiagramMultiSample(data_path, pathwayObj)
+  CirclePlotMultiSample(data_path, pathwayObj)
+  InteractionStrengthMultiSample(data_path)
+}
+
+# Visualization Functions ------------------------------------------------------
+
+HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
+  output_dirPath <- "output/visualizations/heatmaps"
+
+  seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
+  seuratObj <- NormalizeData(seuratObj)
+
+  # Set colors of clusters
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
+  polychrome_pal <- polychrome_pal[3:35]
+  #names(polychrome_pal) = sort(unique(seuratObj$cluster))
+  names(polychrome_pal) = sort(unique(seuratObj$celltype))
+
+  # Get average expression of each cluster for all genes
+  #avgexp <- AverageExpression(seuratObj, assay = "RNA", return.seurat = T, group.by = c("cluster"))
+  avgexp <- AverageExpression(seuratObj, assay = "RNA", return.seurat = T, group.by = c("celltype"))
+
+  factor_levels <- avgexp@active.ident
+
+  Pathway_core_components <- pathwayObj
+  Pathway_core_components$pathway <- gsub("/", "_", Pathway_core_components$pathway) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
+  i = unique(Pathway_core_components$pathway)[1]
+  for(i in unique(Pathway_core_components$pathway) ){
+    cat("\n")
+    cat("## ", i, " {.tabset} \n")
+    df <- subset(Pathway_core_components, pathway == i)
+    genes <- df$gene
+    cat("\n")
+    p <- DoHeatmap(avgexp,
+                   features = genes,
+                   label = TRUE,
+                   draw.lines = FALSE,
+                   raster = FALSE,
+                   angle = 90,
+                   size = 3,
+                   slot = "scale.data",
+                   group.bar = TRUE,
+                   group.colors = polychrome_pal) +
+      scale_fill_gradientn(colors = c("#313695","#FFFFBF","#A50026")) +
+      guides(color = "none") +
+      theme(
+        plot.margin = margin(t = 55, r = 10, b = 10, l = 10), # Adjust margins
+      )
+    print(p)
+    cat("\n")
+    name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
+    ggsave(p, file = paste0(output_dirPath, "/", i, name_extension, ".png"),   # The directory you want to save the file in
+           width = 18, # The width of the plot in inches
+           height = 12)
+  }
+}
+
+DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
+  output_dirPath <- "output/visualizations/dotplots"
+
+  seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
+  Idents(seuratObj) <- "celltype"
+  seuratObj <- NormalizeData(seuratObj)
+  seuratObj <- ScaleData(seuratObj)
+
+  # Set colors of celltypes
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
+  polychrome_pal <- polychrome_pal[3:35]
+  names(polychrome_pal) = sort(unique(seuratObj$celltype))
+
+  Pathway_core_components <- pathwayObj
+  Pathway_core_components$pathway <- gsub("/", "_", Pathway_core_components$pathway) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
+
+  for(i in unique(Pathway_core_components$pathway) ){
+    cat("\n")
+    cat("## ", i, " {.tabset} \n")
+    df <- subset(Pathway_core_components, pathway == i)
+    genes <- unique(df$gene) #TODO: Added this, ie. pathway_core_components_v2, aos exists twice in EGFT pathway, as ligand and reporter
+    cat("\n")
+    p <- scCustomize::DotPlot_scCustom(seuratObj, features = genes, x_lab_rotate = TRUE) +
+      ggtitle("Control") +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      patchwork::plot_annotation(title = paste0(i), theme = theme(plot.title = element_text(hjust = 0.5)))
+    print(p)
+    cat("\n")
+    name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
+    ggsave(p, file = paste0(output_dirPath, "/", i, name_extension, ".png"),   # The directory you want to save the file in
+           width = 20, # The width of the plot in inches
+           height = 12)
+  }
+}
+
+CirclePlotMultiSample <- function(data_path, pathwayObj) {
+  output_dir <- "output/visualizations/circleplots/"
+
+  pathways <- unique(pathwayObj$pathway)
+  pathways <-  gsub("/", "_", pathways) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
+
+  df1 <- read_excel(data_path, sheet = 1)
+  df2 <- read_excel(data_path, sheet = 2)
+  df3 <- read_excel(data_path, sheet = 3)
+  #df4 <- read_excel(data_path, sheet = 4)
+
+  interaction_df <- rbind(df1, df2, df3)
+  interaction_df$secretor <- gsub("/", "_", interaction_df$secretor) #FIXME? Mainly "ISC/EB" is problem
+  interaction_df$receptor <- gsub("/", "_", interaction_df$receptor) #FIXME? Mainly "ISC/EB" is problem
+
+  interaction_list_control <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_control, pval_control))
+  colnames(interaction_list_control)[6] <- "control_score"
+  interaction_list_mutant <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_mutant, pval_mutant))
+  colnames(interaction_list_mutant)[6] <- "mutant_score"
+
+  # Assign color to each cell type
+  paste0(unique(append(interaction_df$secretor, interaction_df$receptor)))
+  palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome")
+  palette_colors <- palette_colors[3:35]
+  names(palette_colors) <- sort(unique(append(interaction_df$secretor, interaction_df$receptor)))
+  celltypes <- names(palette_colors)
+  celltypes <- na.omit(names(palette_colors))
+  celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
+
+  for(celltype in celltypes) {
+    # Create a new workbook for the summed interaction scores
+    wb <- createWorkbook()
+
+    # Loop through each pathway
+    for (pathway in pathways) {
+      cat(paste0(pathway, "\n"))
+
+      # Process mutant interactions
+      interaction_pathway_long_mutant <- subset(interaction_list_mutant, pathway_receptor == pathway) %>%
+        filter(secretor == celltype & receptor != celltype) %>%
+        filter(! receptor %in% c("Perineurial_SubPerineurial_glia", "Ensheathing_Glia", "astrocyte_like_glia")) %>%
+        filter(mutant_score > 0) %>%
+        mutate(variable = paste0(secretor, ".", receptor)) %>%
+        group_by(variable) %>%
+        summarize(sum_score = sum(mutant_score))
+
+      # Process control interactions
+      interaction_pathway_long_control <- subset(interaction_list_control, pathway_receptor == pathway) %>%
+        filter(secretor == celltype & receptor != celltype) %>%
+        filter(! receptor %in% c("Perineurial_SubPerineurial_glia", "Ensheathing_Glia", "astrocyte_like_glia")) %>%
+        filter(control_score > 0) %>%
+        mutate(variable = paste0(secretor, ".", receptor)) %>%
+        group_by(variable) %>%
+        summarize(sum_score = sum(control_score))
+
+      combined_df <- full_join(interaction_pathway_long_control,
+                               interaction_pathway_long_mutant,
+                               by = "variable",
+                               suffix = c("_control", "_mutant"))
+
+      combined_df <- combined_df %>%
+        mutate(
+          sum_score_control = coalesce(sum_score_control, 0),
+          sum_score_mutant = coalesce(sum_score_mutant, 0)
+        )
+
+      net <- combined_df %>%
+        mutate(score_difference = sum_score_mutant - sum_score_control) %>%
+        select(variable, score_difference)
+
+      # Convert to sender/receiver format
+      net$variable <- gsub("\\.", ">", net$variable)
+      net <- net %>%
+        tidyr::separate(variable, c("sender", "receiver"), ">") %>%
+        mutate(pair = if_else(sender < receiver, paste0(sender, "/", receiver), paste0(receiver, "/", sender))) %>%
+        group_by(pair) %>%
+        filter(score_difference == max(score_difference, na.rm = TRUE)) %>% #There was 1 warning in `filter()`. In ℹ In argument: `score_difference == max(score_difference)`. Caused by warning in `max()`: ! no non-missing arguments to max; returning -Inf
+        ungroup() %>%
+        select(-pair) %>%
+        filter(score_difference != 0)
+
+      # Complete graph setup
+      empty_celltype <- setdiff(celltypes, unique(c(net$sender, net$receiver)))
+      for (ct in empty_celltype) {
+        line <- c(ct, ct, 0)
+        net <- rbind(net, line)
+      }
+
+      colnames(net) <- c("sender", "receiver", "n")
+      net$n <- as.numeric(net$n)
+
+      if(sum(net$n) == 0){
+        next
+      }
+
+      # Create graph
+      g <- graph_from_data_frame(net, directed = TRUE)
+      x <- as_adjacency_matrix(g, attr = "n", sparse = FALSE)
+      x <- x[celltypes, celltypes]
+      g <- graph_from_adjacency_matrix(x, mode = "directed", weighted = TRUE)
+
+      # Define color mapping for edge coloring
+      E(g)$color <- ifelse(E(g)$weight > 0, "red", "blue")
+
+      # Determine visual properties
+      edge.start <- ends(g, es = E(g), names = FALSE)
+      coords <- layout_(g, in_circle())
+      coords_scale <- scale(coords)
+
+      V(g)$size <- 20
+      V(g)$color <- palette_colors[V(g)$name]  # Use the corrected color palette
+      V(g)$label.color <- "black"
+      V(g)$label.cex <- 0.8
+      if (max(E(g)$weight) == min(E(g)$weight)) {
+        E(g)$width <- 1
+      } else {
+        E(g)$width <- 0.5 + abs(E(g)$weight) / max(abs(E(g)$weight)) * 4
+      }
+      E(g)$arrow.width <- 3
+      E(g)$label.color <- 'black'
+
+      # Plot setup and save
+      png(file = paste0(output_dir, celltype, "_", gsub(" ", "_", pathway), ".png"),
+          width = 10,
+          height = 10,
+          units = "in",
+          res = 300)
+
+      plot(g, edge.curved = 0.2, vertex.shape = 'circle',
+           layout = coords_scale, margin = 0.2, edge.arrow.size = 0.5,
+           vertex.frame.color = "white", label = FALSE)
+
+      dev.off()
+
+      # Assign pathway to summed interaction score table
+      net$pathway <- pathway
+
+      # Add a worksheet to the workbook
+      addWorksheet(wb, pathway)
+
+      # Write the dataframe to the sheet
+      writeData(wb, sheet = pathway, net)
+
+      cat(paste0("Done! Moving on... \n"))
+    }
+
+    # Save the workbook
+    saveWorkbook(wb, paste0(output_dir, celltype, "_summed_interaction_scores.xlsx"), overwrite = TRUE)
+  }
+}
+
+CirclePlotSingleSample <- function(pathwayObj, data_path) {
+  #output_dirPath <- "output/visualizations/circleplots"
+
+  pathways <- unique(pathwayObj$pathway)
+  pathways <-  gsub("/", "_", pathways) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
+
+  interaction_list <- read.csv(data_path)
+  filtered = grepl("filtered", data_path)
+  interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
+  interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
+
+  sample_name <- sub(".*/([^/]+)_([^/]+)\\.csv$", "\\2", data_path)
+  name_extension <- paste0(sample_name, "_")
+
+  # Check if using specific or non-specific LR interactions between clusters
+  output_dir <- paste0("output/visualizations/circleplots/")
+  # output_dir <- ifelse(
+  #   filtered,
+  #   paste0("output/visualizations/circleplots/filtered/"),
+  #   paste0("output/visualizations/circleplots/non-specific/")
+  # )
+
+  # Print cell types to std out, assign color to each cell type
+  paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
+  polychrome_pal <- polychrome_pal[3:35]
+  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+  #celltypes <- names(polychrome_pal)
+  celltypes <- na.omit(names(polychrome_pal))
+  celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
+
+  # Create a new workbook for the summed interaction scores
+  for (x in celltypes){
+
+    celltype <- x
+
+    wb <- createWorkbook()
+
+    for (pathway in pathways) {
+
+      cat(paste0(pathway, "\n"))
+
+      interaction_pathway_long <- subset(interaction_list, pathway_receptor == pathway) %>%
+        filter(secretor == celltype & receptor != celltype) %>%
+        filter(score > 0) %>%
+        mutate(variable = paste0(secretor, ".", receptor)) %>%
+        select(4,5,6,8)
+
+      data <- interaction_pathway_long
+
+      data$variable <- gsub(".", ">", data$variable, fixed = TRUE)
+
+      col <- polychrome_pal
+      label=FALSE
+      edge.curved=0.5
+      shape='circle'
+      layout=in_circle()
+      vertex.size=20
+      margin=0.2
+      vertex.label.cex=0.8
+      vertex.label.color='black'
+      arrow.width=3
+      edge.label.color='black'
+      edge.label.cex=1
+      edge.max.width=4 # the maximum thickness of the line is 4
+
+      colnames(data)[3] <- "score"
+
+      net <- data %>% group_by(variable) %>% summarize(sum_score = sum(score)) # calculate the average score group by cell type
+
+      net$variable <- gsub(".", ">", net$variable, fixed = TRUE)
+
+      net <- net %>%
+        tidyr::separate(variable, c("sender", "receiver"), ">")
+
+      net <- net %>%
+        mutate(pair = if_else(sender < receiver, paste0(sender, "/", receiver), paste0(receiver, "/", sender)))
+
+      net <- net %>%
+        group_by(pair) %>%
+        filter(sum_score == max(sum_score)) %>%
+        ungroup() %>%
+        select(-pair)
+
+      net <- net %>%
+        filter(sum_score > 0.0)
+
+      empty_celltype <- setdiff(celltypes, unique(c(net$sender, net$receiver)))
+
+      for(ct in empty_celltype) {
+        line <- c(ct, ct, 0)
+        net <- rbind(net, line)
+      }
+
+      colnames(net) <- c("sender", "receiver", "n")
+      net$n <- as.numeric(net$n)
+
+      # This code chunk may be changed to only show the top 15 signals (uncomment slice_head(n=15) %>%)
+      top_val <- net %>%
+        arrange(desc(n)) %>%
+        slice_head(n = 50) %>%
+        pull(n)
+
+      net <- net %>%
+        mutate(n = ifelse(n %in% top_val, n, 0))
+
+      net<-as.data.frame(net,stringsAsFactors=FALSE)
+      g<-graph_from_data_frame(net,directed=TRUE)
+      x <- as_adjacency_matrix(g, attr="n", sparse=FALSE)
+      x <- x[celltypes, celltypes]
+      g <- graph_from_adjacency_matrix(x, mode = "directed", weighted = T)
+      edge.start <- ends(g, es=E(g), names=FALSE)
+      coords<-layout_(g,layout)
+
+      if(sum(net$n) == 0){
+        next
+      }
+
+      if(nrow(coords)!=1){
+        coords_scale=scale(coords)
+      }else{
+        coords_scale<-coords
+      }
+
+      loop.angle<-ifelse(coords_scale[V(g),1]>0,-atan(coords_scale[V(g),2]/coords_scale[V(g),1]),pi-atan(coords_scale[V(g),2]/coords_scale[V(g),1]))
+      V(g)$size<-vertex.size
+      V(g)$color<-col[V(g)]
+      V(g)$label.color<-vertex.label.color
+      V(g)$label.cex<-vertex.label.cex
+      if(label){
+        E(g)$label<-E(g)$n
+      }
+
+      if(max(E(g)$weight)==min(E(g)$weight)){
+        E(g)$width<-1 # if all the average scores are the same, set all the line thickness to 1
+      }else{
+        E(g)$width <- 0.5 + E(g)$weight/max(E(g)$weight)*edge.max.width # otherwise, set the line thickness linearly related to the average score
+      }
+      E(g)$arrow.width<-arrow.width
+      E(g)$label.color<-edge.label.color
+      E(g)$color<-V(g)$color[edge.start[,1]]
+
+      png(file=paste0(output_dir, name_extension, celltype, "_", gsub(" ","_",pathway), ".png"),
+          width = 10,
+          height = 10,
+          units = "in",
+          res = 300)
+      # png(file=paste0(output_dir, tolower(gsub("_long_filtered.csv|_long.csv", "", gsub("output/interaction_", "", data_path))), "/", celltype, "_", gsub(" ","_",pathway), ".png"),
+      #     width     = 10,
+      #     height    = 10,
+      #     units     = "in",
+      #     res       = 300)
+
+      plot(g,edge.curved=0.2,vertex.shape=shape,
+           layout=coords_scale,margin=margin,edge.arrow.size=0.5, vertex.frame.color="white"
+           , label=FALSE)
+
+      dev.off()
+
+      # Assign pathway to summed interaction score table
+      net$pathway <- pathway
+
+      # Add a worksheet to the workbook
+      addWorksheet(wb, pathway)
+
+      # Write the dataframe to the sheet
+      writeData(wb, sheet = pathway, net)
+
+      cat(paste0("Done! Moving on... \n"))
+    }
+    # Save the workbook
+    saveWorkbook(wb, paste0(output_dir, name_extension, celltype,"_summed_interaction_scores.xlsx"), overwrite = TRUE)
+  }
+}
+
+ChordDiagramMultiSample <- function(data_path, pathwayObj) {
+  output_dir <- paste0("output/visualizations/chord_diagrams/")
+
+  df1 <- read_excel(data_path, sheet = 1)
+  df2 <- read_excel(data_path, sheet = 2)
+  df3 <- read_excel(data_path, sheet = 3)
+  #df4 <- read_excel(data_path, sheet = 4)
+
+  interaction_df <- rbind(df1, df2, df3)
+  interaction_df$secretor <- gsub("/", "_", interaction_df$secretor) #FIXME? Mainly "ISC/EB" is problem
+  interaction_df$receptor <- gsub("/", "_", interaction_df$receptor) #FIXME? Mainly "ISC/EB" is problem
+
+  interaction_list <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_control, pval_control))
+  interaction_list2 <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_mutant, pval_mutant))
+
+  paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
+  polychrome_pal <- polychrome_pal[3:35]
+  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+
+  celltypes <- unique(interaction_list$secretor)
+
+  sheet_names <- excel_sheets(data_path)
+  mutant_name <- gsub("Significant_In_", "", sheet_names[2])
+  control_name <- gsub("Significant_In_", "", sheet_names[3])
+
+  for(celltype in celltypes) {
+    interaction_list_1 <- interaction_list
+    interaction_list_2 <- interaction_list2
+
+    colnames(interaction_list_1)[6:7] <- c("score", "pval")
+    colnames(interaction_list_2)[6:7] <- c("score", "pval")
+
+    # Process data for the specific celltype
+    interaction_list_subset <- interaction_list_1 %>%
+      filter(secretor == celltype & receptor != celltype)
+
+    if(nrow(interaction_list_subset) == 0){
+      return(NULL)
+    }
+
+    # Get summarized interaction scores
+    sorting_order <- interaction_list_subset %>%
+      group_by(receptor) %>%
+      summarize(total_score = sum(score)) %>%
+      arrange(desc(total_score)) %>%
+      ungroup()
+
+    # Sort dataframe for chord diagram
+    sorted_chord_df <- interaction_list_subset
+    sorted_chord_df$receptor <- factor(sorted_chord_df$receptor, levels = sorting_order$receptor)
+    sorted_chord_df <- sorted_chord_df %>% left_join(sorting_order) %>% arrange(desc(total_score)) %>% select(-total_score)
+    sorted_chord_df <- sorted_chord_df[,c(5,4,6)]
+
+    # Process data for the specific celltype
+    interaction_list_subset_2 <- interaction_list_2 %>%
+      filter(secretor == celltype & receptor != celltype)
+
+    if(nrow(interaction_list_subset_2) == 0){
+      return(NULL)
+    }
+
+    # Get summarized interaction scores
+    sorting_order_2 <- interaction_list_subset_2 %>%
+      group_by(receptor) %>%
+      summarize(total_score = sum(score)) %>%
+      arrange(desc(total_score)) %>%
+      ungroup()
+
+    # Sort dataframe for chord diagram
+    sorted_chord_df_2 <- interaction_list_subset_2
+    sorted_chord_df_2$receptor <- factor(sorted_chord_df_2$receptor, levels = sorting_order_2$receptor)
+    sorted_chord_df_2 <- sorted_chord_df_2 %>% left_join(sorting_order_2) %>% arrange(desc(total_score)) %>% select(-total_score)
+    sorted_chord_df_2 <- sorted_chord_df_2[,c(5,4,6)]
+    ###
+
+    if(sum(sorted_chord_df$score) > sum(sorted_chord_df_2$score)){
+      gap = calc_gap(sorted_chord_df, sorted_chord_df_2, big.gap = 10, small.gap = 0.1)
+    }else{
+      gap = calc_gap(sorted_chord_df_2, sorted_chord_df, big.gap = 10, small.gap = 0.05)
+    }
+
+    #   case_when(sum(sorted_chord_df$score) > sum(sorted_chord_df_2$score) ~ calc_gap(sorted_chord_df, sorted_chord_df_2, big.gap = 30, small.gap = 3),
+    #             sum(sorted_chord_df$score) < sum(sorted_chord_df_2$score) ~ calc_gap(sorted_chord_df_2, sorted_chord_df, big.gap = 30, small.gap = 3))
+    # # gap = calc_gap(sorted_chord_df, sorted_chord_df_2, big.gap = 30, small.gap = 3)
+
+    # Clear previous circos plots
+    circos.clear()
+
+    # Open a temporary graphics device
+    temp_file <- tempfile(fileext = ".png")
+    png(temp_file, width=2000, height=3000, res=300)
+
+    # Draw the chord diagram
+    chordDiagramFromDataFrame(
+      sorted_chord_df,
+      grid.col = polychrome_pal,
+      big.gap = gap,
+      small.gap = 1,
+      annotationTrack = c("grid"),
+      preAllocateTracks = list(track.height = 0.4)
+    )
+
+    circos.track(track.index = 1,
+                 panel.fun = function(x, y) {
+                   circos.text(CELL_META$xcenter, CELL_META$ylim[1] + cm_h(0.75), CELL_META$sector.index,
+                               facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+                 }, bg.border = NA)
+    title(main = control_name)
+    dev.off()  # Close the graphics device
+
+    # Convert the PNG to a rasterGrob
+    image <- png::readPNG(temp_file)
+    unlink(temp_file)  # Remove temporary file
+    f1 <- rasterGrob(image)
+
+    # SECOND PLOT #
+
+    # Clear previous circos plots
+    circos.clear()
+
+    # Open a temporary graphics device
+    temp_file_2 <- tempfile(fileext = ".png")
+    png(temp_file_2, width=2000, height=3000, res=300)
+
+    # Draw the chord diagram
+    chordDiagramFromDataFrame(
+      sorted_chord_df_2,
+      grid.col = polychrome_pal,
+      big.gap = gap,
+      small.gap = 1,
+      annotationTrack = c("grid"),
+      preAllocateTracks = list(track.height = 0.4)
+    )
+
+    circos.track(track.index = 1,
+                 panel.fun = function(x, y) {
+                   circos.text(CELL_META$xcenter, CELL_META$ylim[1] + cm_h(0.75), CELL_META$sector.index,
+                               facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+                 }, bg.border = NA)
+    title(main = mutant_name)
+    dev.off()  # Close the graphics device
+
+    # Convert the PNG to a rasterGrob
+    image_2 <- png::readPNG(temp_file_2)
+    unlink(temp_file_2)  # Remove temporary file
+    f2 <- rasterGrob(image_2)
+    cowplot::plot_grid(f1, f2, nrow = 1)  # Arrange side by side, left is always control
+    ggsave(filename = paste0(output_dir, celltype, "_chord_diagram.png"))
+  }
+}
+
+ChordDiagramSingleSample <- function(data_path) {
+  interaction_list <- read.csv(data_path)
+  filtered = grepl("filtered", data_path)
+  interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
+  interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
+
+  sample_name <- sub(".*/([^/]+)_([^/]+)\\.csv$", "\\2", data_path)
+  name_extension <- paste0(sample_name, "_")
+
+
+  # Print cell types to std out, assign color to each cell type
+  paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
+  polychrome_pal <- polychrome_pal[3:35]
+  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+  #celltypes <- names(polychrome_pal)
+  celltypes <- na.omit(names(polychrome_pal))
+  celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
+
+  for(celltype in celltypes) {
+    print(paste0("Making diagram for celltype: ", celltype))
+    # Determine filename based on `filtered` flag
+    filename <- paste0("output/visualizations/chord_diagrams/", name_extension, celltype, "_chord_diagram.png")
+    # filename <- ifelse(
+    #   filtered,
+    #   paste0("output/visualizations/single_analysis/chord_diagrams/filtered/", name_extension, celltype, "_chord_diagram.png"),
+    #   paste0("output/visualizations/single_analysis/chord_diagrams/non-specific/", name_extension, celltype, "_chord_diagram.png")
+    # )
+
+    # Process only celltype of interest
+    interaction_list_cell  <- interaction_list %>% filter(secretor == celltype & receptor != celltype)
+
+    # Get summarized interaction scores
+    sorting_order <- interaction_list_cell %>%
+      group_by(receptor) %>%
+      summarize(total_score = sum(score)) %>%
+      arrange(desc(total_score)) %>%
+      ungroup()
+
+    # Sort dataframe in descending order and prepare dataframe for chord diagram function
+    sorted_chord_df <- interaction_list_cell
+    sorted_chord_df$receptor <- factor(sorted_chord_df$receptor, levels = sorting_order$receptor)
+    sorted_chord_df <- sorted_chord_df %>% left_join(sorting_order) %>% arrange(desc(total_score)) %>% select(-total_score)
+    sorted_chord_df <- sorted_chord_df[,c(5,4,6)]
+
+    png(filename,
+        width = 10,
+        height = 10,
+        units = "in",
+        res = 300)
+
+    # Clear any previous circos plots
+    circos.clear()
+
+    # Define a reasonable estimate for the track height
+    label_width <- 0.3  # Fixed width, adjust based on visual inspection and need
+
+    # Draw the chord diagram
+    chordDiagramFromDataFrame(
+      sorted_chord_df,
+      grid.col = polychrome_pal,
+      big.gap = 30,
+      small.gap = 4,
+      annotationTrack = c("grid"),
+      preAllocateTracks = list(track.height = label_width)  # Use the fixed label width
+    )
+
+    # Add text within track
+    circos.track(track.index = 1,
+                 panel.fun = function(x, y) {
+                   circos.text(CELL_META$xcenter, CELL_META$ylim[1] + cm_h(0.75), CELL_META$sector.index,
+                               facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+                 }, bg.border = NA)
+
+    dev.off()
+  }
+}
+
+InteractionStrengthMultiSample <- function(data_path) {
+  output_dir <- "output/visualizations/interaction_strength/"
+
+  df1 <- read_excel(data_path, sheet = 1)
+  df2 <- read_excel(data_path, sheet = 2)
+  df3 <- read_excel(data_path, sheet = 3)
+
+  interaction_df <- rbind(df1, df2, df3)
+  interaction_df$secretor <- gsub("/", "_", interaction_df$secretor)
+  interaction_df$receptor <- gsub("/", "_", interaction_df$receptor)
+
+  sheet_names <- excel_sheets(data_path)
+  mutant_name <- gsub("Significant_In_", "", sheet_names[2])
+  control_name <- gsub("Significant_In_", "", sheet_names[3])
+
+  control_df <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_control, pval_control))
+  mutant_df <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_mutant, pval_mutant))
+
+  # Calculate scores for control
+  outgoing_control <- control_df %>%
+    group_by(secretor) %>%
+    summarize(outgoing_score = sum(score_control, na.rm = TRUE))
+
+  incoming_control <- control_df %>%
+    group_by(receptor) %>%
+    summarize(incoming_score = sum(score_control, na.rm = TRUE))
+
+  scores_control <- full_join(outgoing_control, incoming_control, by = c("secretor" = "receptor")) %>%
+    mutate(cell_type = secretor)
+  scores_control[is.na(scores_control)] <- 0
+
+  # Calculate scores for mutant
+  outgoing_mutant <- mutant_df %>%
+    group_by(secretor) %>%
+    summarize(outgoing_score = sum(score_mutant, na.rm = TRUE))
+
+  incoming_mutant <- mutant_df %>%
+    group_by(receptor) %>%
+    summarize(incoming_score = sum(score_mutant, na.rm = TRUE))
+
+  scores_mutant <- full_join(outgoing_mutant, incoming_mutant, by = c("secretor" = "receptor")) %>%
+    mutate(cell_type = secretor)
+  scores_mutant[is.na(scores_mutant)] <- 0
+
+  # Determine combined axis limits
+  x_range_combined <- range(c(scores_control$incoming_score, scores_mutant$incoming_score), na.rm = TRUE)
+  y_range_combined <- range(c(scores_control$outgoing_score, scores_mutant$outgoing_score), na.rm = TRUE)
+
+  x_limits <- c(floor(x_range_combined[1] * 0.9), ceiling(x_range_combined[2] * 1.1))
+  y_limits <- c(floor(y_range_combined[1] * 0.9), ceiling(y_range_combined[2] * 1.1))
+
+  # Define custom color palette
+  n_colors <- max(length(unique(scores_control$cell_type)), length(unique(scores_mutant$cell_type)))
+  palette_colors <- scales::hue_pal()(n_colors)
+
+  # Plot for control
+  a1 <- ggplot(scores_control, aes(x = incoming_score, y = outgoing_score)) +
+    geom_point(aes(color = cell_type), size = 3, alpha = 0.7) +
+    geom_text_repel(aes(label = cell_type, color = cell_type), size = 3) +
+    scale_color_manual(values = palette_colors) +
+    labs(title = paste0("Interaction Strength: ", control_name), x = "Incoming Score", y = "Outgoing Score", color = "Cell Type") +
+    scale_x_continuous(limits = x_limits, expand = c(0, 0)) +
+    scale_y_continuous(limits = y_limits, expand = c(0, 0)) +
+    ggpubr::theme_pubr() +
+    theme(legend.position = "right")
+
+  # Plot for mutant
+  a2 <- ggplot(scores_mutant, aes(x = incoming_score, y = outgoing_score)) +
+    geom_point(aes(color = cell_type), size = 3, alpha = 0.7) +
+    geom_text_repel(aes(label = cell_type, color = cell_type), size = 3) +
+    scale_color_manual(values = palette_colors) +
+    labs(title = paste0("Interaction Strength: ", mutant_name), x = "Incoming Score", y = "Outgoing Score", color = "Cell Type") +
+    scale_x_continuous(limits = x_limits, expand = c(0, 0)) +
+    scale_y_continuous(limits = y_limits, expand = c(0, 0)) +
+    ggpubr::theme_pubr() +
+    theme(legend.position = "right")
+
+  # Combine the plots using patchwork
+  combined_plot <- a1 / a2 + plot_layout(guides = 'collect')
+
+  # Print and save the combined plot
+  #print(combined_plot)
+  ggsave(paste0(output_dir, "Interaction_Strength_DEG_filtered.png"), combined_plot, width = 12, height = 10, dpi = 300)
+}
+
+InteractionStrengthSingleSample <- function(fileList) {
+  all_outgoing_scores_list <- list()
+  all_incoming_scores_list <- list()
+
+  for (i in seq_along(fileList)) {
+    file <- fileList[i]
+    interaction_df <- read.csv(file)
+
+    outgoing <- interaction_df %>%
+      group_by(secretor) %>%
+      summarize(outgoing_score = sum(score, na.rm = TRUE))
+
+    incoming <- interaction_df %>%
+      group_by(receptor) %>%
+      summarize(incoming_score = sum(score, na.rm = TRUE))
+
+    all_outgoing_scores_list[[i]] <- outgoing
+    all_incoming_scores_list[[i]] <- incoming
+  }
+
+  combined_outgoing <- bind_rows(all_outgoing_scores_list)
+  combined_incoming <- bind_rows(all_incoming_scores_list)
+
+  # Calculate the ranges for the axis limits across all dataframes
+  x_range <- range(combined_incoming$incoming_score, na.rm = TRUE)
+  y_range <- range(combined_outgoing$outgoing_score, na.rm = TRUE)
+
+  # Add padding to the limits for better visualization
+  x_limits <- c(floor(x_range[1] * 0.9), ceiling(x_range[2] * 1.1))
+  y_limits <- c(floor(y_range[1] * 0.9), ceiling(y_range[2] * 1.1))
+
+  # Plot each dataset with common scales
+  for (i in seq_along(fileList)) {
+    file <- fileList[i]
+    sample_name <- sub("^output/interactions/interactions_long_filtered/interaction_long_filtered_", "", file) # TODO: Pretty specific regex, may or may not need to make more general
+    sample_name <- sub("\\.csv$", "", sample_name)
+    scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))
+    scores[is.na(scores)] <- 0
+    scores <- scores %>%
+      mutate(cell_type = secretor)
+
+    n_colors <- length(unique(scores$cell_type))
+    palette_colors <- scales::hue_pal()(n_colors)
+
+    plot_title <- paste("Interaction Strength:", sample_name)
+
+    p <- ggplot(scores, aes(x = incoming_score, y = outgoing_score)) +
+      geom_point(aes(color = cell_type), size = 3, alpha = 0.7) +
+      geom_text_repel(aes(label = cell_type, color = cell_type),
+                      size = 3, box.padding = 0.3, point.padding = 0.2, max.overlaps = 10) +
+      theme_minimal(base_size = 18) +
+      scale_color_manual(values = palette_colors) +
+      labs(title = plot_title,
+           x = "Incoming Score",
+           y = "Outgoing Score",
+           color = "Cell Type") +
+      scale_x_continuous(limits = x_limits, expand = c(0, 0)) +
+      scale_y_continuous(limits = y_limits, expand = c(0, 0)) +
+      ggpubr::theme_pubr() +
+      ggpubr::labs_pubr() +
+      theme(legend.position = "right")
+
+    print(p)
+
+    output_filename <- paste0("output/visualizations/interaction_strength/", sample_name, "_interaction_strength.png")
+    ggsave(output_filename, plot = p, width = 12, height = 10, dpi = 300)
+  }
+}
+
+# Helper Functions -------------------------------------------------------------
+
+splitCounts <- function(metadata_split, counts) {
+  results <- list()
+
+  for(prefix in names(metadata_split)) {
+    curr_metadata <- metadata_split[[prefix]]
+
+    barcodes <- curr_metadata[, 1]
+
+    subset_counts <- counts[, colnames(counts) %in% barcodes, drop = FALSE]
+
+    results[[prefix]] <- subset_counts
+  }
+
+  return(results)
+}

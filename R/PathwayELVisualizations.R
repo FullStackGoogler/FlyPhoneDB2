@@ -1,0 +1,147 @@
+#' Pathway Expression Level Visualization Generator
+#'
+#' Generates visualizations for Pathway expression levels in each given sample
+#'
+#' @keywords internal
+PathwayELVisualizations <- function() {
+  output_dir <- "output/visualizations/sample_visualizations"
+  fileList <- list.files("output/expression_levels", full.names = TRUE)
+
+  # Initialize global max variables
+  global_ligand_max <- 0
+  global_receptor_max <- 0
+  global_reporter_max <- 0
+  global_genetype_max <- 0
+
+  # Calculate max values for consistent plot scales
+  for(curr_file_path in fileList) {
+    expressionLevels <- read.csv(curr_file_path)
+    celltype_columns <- setdiff(names(expressionLevels), c('Pathway', 'sample', 'gene', 'gene_type'))
+
+    ligand_max <- expressionLevels %>%
+      filter(gene_type == "ligand" & Pathway != "unknown") %>%
+      summarise(across(all_of(celltype_columns), max, na.rm = TRUE)) %>%
+      max()
+
+    receptor_max <- expressionLevels %>%
+      filter(gene_type == "receptor" & Pathway != "unknown") %>%
+      summarise(across(all_of(celltype_columns), max, na.rm = TRUE)) %>%
+      max()
+
+    reporter_max <- expressionLevels %>%
+      filter(gene_type %in% c("reporter", "TF and reporter") & Pathway != "unknown") %>%
+      summarise(across(all_of(celltype_columns), max, na.rm = TRUE)) %>%
+      max()
+
+    global_ligand_max <- max(global_ligand_max, ligand_max)
+    global_receptor_max <- max(global_receptor_max, receptor_max)
+    global_reporter_max <- max(global_reporter_max, reporter_max)
+    global_genetype_max <- max(global_ligand_max, global_receptor_max, global_reporter_max)
+  }
+
+  for(curr_file_path in fileList) {
+    sample_name <- sub("pathway_expressions_(.*)\\.csv", "\\1", basename(curr_file_path))
+
+    expressionLevels <- read.csv(curr_file_path)
+    expressionLevels$X <- NULL
+
+    ligandEL <- expressionLevels %>%
+      filter(Pathway != "unknown", gene_type == "ligand")
+    receptorEL <- expressionLevels %>%
+      filter(Pathway != "unknown", gene_type == "receptor")
+    reporterEL <- expressionLevels %>%
+      filter(Pathway != "unknown", gene_type %in% c("reporter", "TF and reporter"))
+
+    ligand_melted <- ligandEL %>%
+      gather(key = "celltype", value = "value", -Pathway, -sample, -gene, -gene_type) %>%
+      mutate(Pathway_gene = paste(
+        str_replace(Pathway, " signaling pathway", ""),
+        gene,
+        sep = "    "
+      ))
+
+    receptor_melted <- receptorEL %>%
+      gather(key = "celltype", value = "value", -Pathway, -sample, -gene, -gene_type) %>%
+      mutate(Pathway_gene = paste(
+        str_replace(Pathway, " signaling pathway", ""),
+        gene,
+        sep = "    "
+      ))
+
+    reporter_melted <- reporterEL %>%
+      gather(key = "celltype", value = "value", -Pathway, -sample, -gene, -gene_type) %>%
+      mutate(Pathway_gene = paste(
+        str_replace(Pathway, " signaling pathway", ""),
+        gene,
+        sep = "    "
+      ))
+
+    ggplot(ligand_melted, aes(x = celltype, y = Pathway_gene, fill = value)) +
+      geom_tile() +
+      scale_fill_gradient(name = "Ligand Avg Expr", low = "white", high = "blue", limits = c(0, global_genetype_max)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      labs(
+        title = "Ligand Average Expression Heatmap",
+        x = "Celltype",
+        y = "Pathway Gene"
+      )
+    ggsave(paste0(output_dir, "/", sample_name, "_Ligand_Heatmap.png"), width = 12, height = 8, units = "in")
+
+    ggplot(receptor_melted, aes(x = celltype, y = Pathway_gene, fill = value)) +
+      geom_tile() +
+      scale_fill_gradient(name = "Receptor Avg Expr", low = "white", high = "blue", limits = c(0, global_genetype_max)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      labs(
+        title = "Receptor Average Expression Heatmap",
+        x = "Celltype",
+        y = "Pathway Gene"
+      )
+    ggsave(paste0(output_dir, "/", sample_name, "_Receptor_Heatmap.png"), width = 12, height = 8, units = "in")
+
+    ggplot(reporter_melted, aes(x = celltype, y = Pathway_gene, fill = value)) +
+      geom_tile() +
+      scale_fill_gradient(name = "Reporter Avg Expr", low = "white", high = "blue", limits = c(0, global_genetype_max)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      labs(
+        title = "Reporter Average Expression Heatmap",
+        x = "Celltype",
+        y = "Pathway Gene"
+      )
+    ggsave(paste0(output_dir, "/", sample_name, "_Reporter_Heatmap.png"), width = 12, height = 8, units = "in")
+
+    # Dotplot generation:
+    reporterEL_filtered <- reporterEL %>%
+      filter(!gene %in% c("dpp", "Drs", "Myc"))
+
+    receptorEL_filtered <- receptorEL %>%
+      filter(!gene %in% c("dally", "dlp"))
+
+    reporterMAX <- reporterEL_filtered %>%
+      group_by(Pathway) %>%
+      summarise(across(all_of(celltype_columns), max, na.rm = TRUE))
+
+    receptorMAX <- receptorEL_filtered %>%
+      group_by(Pathway) %>%
+      summarise(across(all_of(celltype_columns), max, na.rm = TRUE))
+
+    reporterMAX_long <- reporterMAX %>%
+      pivot_longer(cols = -Pathway, names_to = "celltype", values_to = "size_value")
+
+    receptorMAX_long <- receptorMAX %>%
+      pivot_longer(cols = -Pathway, names_to = "celltype", values_to = "color_value")
+
+    combinedMAX <- left_join(reporterMAX_long, receptorMAX_long, by = c("Pathway", "celltype"))
+
+    ggplot(combinedMAX, aes(x = celltype, y = Pathway)) +
+      geom_point(aes(color = color_value, size = size_value)) +
+      scale_size_continuous(name = "Reporter Max Expr", limits = c(0, global_reporter_max)) +
+      scale_color_viridis_c(name = "Receptor Max Expr", direction = -1, limits = c(0, global_receptor_max)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.background = element_rect(fill = "white"), panel.grid = element_line(color = "white")) +
+      labs(
+        title = paste0("Pathway Summary Dotplot - ", sample_name),
+        x = "Celltype",
+        y = "Pathway"
+      )
+    ggsave(paste0(output_dir, "/", sample_name, "_Pathways_Dotplot.png"), width = 8, height = 4, units = "in")
+  }
+}
