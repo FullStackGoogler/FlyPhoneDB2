@@ -29,3 +29,5 @@ Depends:
     ggrepel,
     patchwork
 LazyData: true
+URL: https://github.com/FullStackGoogler/FlyPhone
+BugReports: https://github.com/FullStackGoogler/FlyPhone/issues
