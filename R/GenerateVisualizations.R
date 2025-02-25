@@ -100,10 +100,19 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
   seuratObj <- NormalizeData(seuratObj)
 
   # Set colors of clusters
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
-  polychrome_pal <- polychrome_pal[3:35]
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(seuratObj$celltype)))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+
   #names(polychrome_pal) = sort(unique(seuratObj$cluster))
-  names(polychrome_pal) = sort(unique(seuratObj$celltype))
+  names(color_palette) = sort(unique(seuratObj$celltype))
 
   # Get average expression of each cluster for all genes
   #avgexp <- AverageExpression(seuratObj, assay = "RNA", return.seurat = T, group.by = c("cluster"))
@@ -129,7 +138,7 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
                    size = 3,
                    slot = "scale.data",
                    group.bar = TRUE,
-                   group.colors = polychrome_pal) +
+                   group.colors = color_palette) +
       scale_fill_gradientn(colors = c("#313695","#FFFFBF","#A50026")) +
       guides(color = "none") +
       theme(
@@ -152,10 +161,18 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
   seuratObj <- NormalizeData(seuratObj)
   seuratObj <- ScaleData(seuratObj)
 
-  # Set colors of celltypes
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
-  polychrome_pal <- polychrome_pal[3:35]
-  names(polychrome_pal) = sort(unique(seuratObj$celltype))
+  # Set colors of clusters
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(seuratObj$celltype)))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+  names(color_palette) = sort(unique(seuratObj$celltype))
 
   Pathway_core_components <- pathwayObj
   Pathway_core_components$pathway <- gsub("/", "_", Pathway_core_components$pathway) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
@@ -204,9 +221,19 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
 
   # Assign color to each cell type
   paste0(unique(append(interaction_df$secretor, interaction_df$receptor)))
-  palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome")
-  palette_colors <- palette_colors[3:35]
-  names(palette_colors) <- sort(unique(append(interaction_df$secretor, interaction_df$receptor)))
+
+  # Set colors of clusters
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(append(interaction_df$secretor, interaction_df$receptor))))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+  names(color_palette) <- sort(unique(append(interaction_df$secretor, interaction_df$receptor)))
   celltypes <- names(palette_colors)
   celltypes <- na.omit(names(palette_colors))
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
@@ -357,11 +384,21 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
 
   # Print cell types to std out, assign color to each cell type
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
-  polychrome_pal <- polychrome_pal[3:35]
-  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+
+  # Set colors of clusters
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(append(interaction_list$secretor, interaction_list$receptor))))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+  names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
   #celltypes <- names(polychrome_pal)
-  celltypes <- na.omit(names(polychrome_pal))
+  celltypes <- na.omit(names(color_palette))
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
 
   # Create a new workbook for the summed interaction scores
@@ -385,7 +422,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
 
       data$variable <- gsub(".", ">", data$variable, fixed = TRUE)
 
-      col <- polychrome_pal
+      col <- color_palette
       label=FALSE
       edge.curved=0.5
       shape='circle'
@@ -527,9 +564,19 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
   interaction_list2 <- interaction_df %>% select(c(Gene_secreted, Gene_receptor, pathway_receptor, secretor, receptor, score_mutant, pval_mutant))
 
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
-  polychrome_pal <- polychrome_pal[3:35]
-  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+
+  # Set colors of clusters
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(append(interaction_list$secretor, interaction_list$receptor))))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+  names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
 
   celltypes <- unique(interaction_list$secretor)
 
@@ -607,7 +654,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
     # Draw the chord diagram
     chordDiagramFromDataFrame(
       sorted_chord_df,
-      grid.col = polychrome_pal,
+      grid.col = color_palette,
       big.gap = gap,
       small.gap = 1,
       annotationTrack = c("grid"),
@@ -639,7 +686,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
     # Draw the chord diagram
     chordDiagramFromDataFrame(
       sorted_chord_df_2,
-      grid.col = polychrome_pal,
+      grid.col = color_palette,
       big.gap = gap,
       small.gap = 1,
       annotationTrack = c("grid"),
@@ -675,11 +722,21 @@ ChordDiagramSingleSample <- function(data_path) {
 
   # Print cell types to std out, assign color to each cell type
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = 35, palette = "polychrome") # Save palette information
-  polychrome_pal <- polychrome_pal[3:35]
-  names(polychrome_pal) = sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
+
+  # Set colors of clusters
+  color_palette <- NULL
+
+  celltype_count <- length(sort(unique(append(interaction_list$secretor, interaction_list$receptor))))
+
+  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    color_palette <- color_palette[3:36]
+  } else { # Too many celltypes, use varibow instead
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
+  names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
   #celltypes <- names(polychrome_pal)
-  celltypes <- na.omit(names(polychrome_pal))
+  celltypes <- na.omit(names(color_palette))
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
 
   for(celltype in celltypes) {
@@ -723,7 +780,7 @@ ChordDiagramSingleSample <- function(data_path) {
     # Draw the chord diagram
     chordDiagramFromDataFrame(
       sorted_chord_df,
-      grid.col = polychrome_pal,
+      grid.col = color_palette,
       big.gap = 30,
       small.gap = 4,
       annotationTrack = c("grid"),
