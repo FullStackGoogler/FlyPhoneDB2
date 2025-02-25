@@ -76,51 +76,51 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     seurat_object_list <- append(seurat_object_list, seuratObj)
   }
 
-  # print("Creating percentage expression file...")
-  #
-  # # Create percentage expression file for later analysis
-  # percentage_expression <- list()
-  #
-  # for(i in seq_along(seurat_object_list)) {
-  #   seuratObj <- seurat_object_list[[i]]
-  #
-  #   count_pe <- as.data.frame(GetAssayData(seuratObj, layer = "counts"))
-  #   count_pe <- as.data.frame(t(count_pe))
-  #
-  #   metdata_pe <- seuratObj@meta.data
-  #
-  #   combined_pe <- cbind(metdata_pe[, c("celltype")], count_pe)
-  #   colnames(combined_pe)[1] <- "celltype"
-  #
-  #   # Get all column names - celltype to get all gene columns
-  #   gene_cols <- setdiff(names(combined_pe), c("celltype"))
-  #
-  #   # Group by celltype and calculate percentage expression
-  #   perc_df <- combined_pe %>%
-  #     group_by(celltype) %>%
-  #     summarize(across(all_of(gene_cols), ~ sum(. > 0) / n(), .names = "{.col}"))
-  #
-  #   # Convert to long format
-  #   result_df <- perc_df %>%
-  #     pivot_longer(
-  #       cols = all_of(gene_cols),
-  #       names_to = "Gene",
-  #       values_to = seuratObj@project.name
-  #     )
-  #
-  #   result_df <- result_df[, c(2, 3, 1)]
-  #
-  #   percentage_expression[[i]] <- result_df
-  # }
-  #
-  # percentage_expression_reduced <- Reduce(function(x, y) merge(x, y, by = c("Gene", "celltype")), percentage_expression)
-  # pctexpr_final <- percentage_expression_reduced %>%
-  #   select(Gene, everything()) %>%
-  #   relocate(celltype, .after = last_col())
-  #
-  # write.csv(pctexpr_final, "output/Percentage_Expression.csv")
-  #
-  # print("Percentage Expression saved to \"output/Percentage_Expression.csv\"")
+  print("Creating percentage expression file...")
+
+  # Create percentage expression file for later analysis
+  percentage_expression <- list()
+
+  for(i in seq_along(seurat_object_list)) {
+    seuratObj <- seurat_object_list[[i]]
+
+    count_pe <- as.data.frame(GetAssayData(seuratObj, layer = "counts"))
+    count_pe <- as.data.frame(t(count_pe))
+
+    metdata_pe <- seuratObj@meta.data
+
+    combined_pe <- cbind(metdata_pe[, c("celltype")], count_pe)
+    colnames(combined_pe)[1] <- "celltype"
+
+    # Get all column names - celltype to get all gene columns
+    gene_cols <- setdiff(names(combined_pe), c("celltype"))
+
+    # Group by celltype and calculate percentage expression
+    perc_df <- combined_pe %>%
+      group_by(celltype) %>%
+      summarize(across(all_of(gene_cols), ~ sum(. > 0) / n(), .names = "{.col}"))
+
+    # Convert to long format
+    result_df <- perc_df %>%
+      pivot_longer(
+        cols = all_of(gene_cols),
+        names_to = "Gene",
+        values_to = seuratObj@project.name
+      )
+
+    result_df <- result_df[, c(2, 3, 1)]
+
+    percentage_expression[[i]] <- result_df
+  }
+
+  percentage_expression_reduced <- Reduce(function(x, y) merge(x, y, by = c("Gene", "celltype")), percentage_expression)
+  pctexpr_final <- percentage_expression_reduced %>%
+    select(Gene, everything()) %>%
+    relocate(celltype, .after = last_col())
+
+  write.csv(pctexpr_final, "output/Percentage_Expression.csv")
+
+  print("Percentage Expression saved to \"output/Percentage_Expression.csv\"")
 
   # Interaction Score Calculation ----------------------------------------------
   for(seuratObj in seurat_object_list) {
