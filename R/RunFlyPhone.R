@@ -18,7 +18,7 @@
 #' RunFlyPhone(counts_fn = "GSE218641_filtered_feature_bc_matrix.txt", metadata_fn = "GSE218641_GEO_metadata_Afroditi_Petsakou", DEG = "Recovery_vs_Homeostasis_DEG.csv", pct_filter = 0.05, knowledgebase_version = "Version 2 All", perm_times = 100, delimitor = " ")
 #'
 #' @export
-RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, knowledgebase_version, perm_times = 1000, delimitor = "\t") {
+RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, knowledgebase_version, perm_times = 1000, delimitor = "\t", seuratObject = NULL) {
   # Preprocessing --------------------------------------------------------------
 
   # Boolean for checking if a DEG file is provided
@@ -39,7 +39,7 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
   # Pipeline -------------------------------------------------------------------
 
   # Calculate the raw interaction scores
-  results <- CalculateInteractions(counts_fn, metadata_fn, annotationObj, pathwayObj, perm_times, knowledgebase_version, delimitor)
+  results <- CalculateInteractions(counts_fn, metadata_fn, annotationObj, pathwayObj, perm_times, knowledgebase_version, delimitor, seuratObject)
 
   # Boolean for if multiple samples were detected
   isMultiSample <- length(results) > 1
@@ -71,10 +71,13 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
   doMultivis <- isMultiSample && DEG_exists
 
   # Generate cell-cell communication visualizations
-  GenerateVisualizations(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor)
+  GenerateVisualizations(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor, seuratObject)
 
   # Generate pathway summary visualizations
   PathwayELVisualizations()
+
+  # Remove the percentage expression file from the final output
+  file.remove("./output/Percentage_Expression.csv")
 }
 
 # Helper Functions -------------------------------------------------------------

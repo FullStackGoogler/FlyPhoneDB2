@@ -10,11 +10,12 @@
 #' @param perm_times The number of times to shuffle the clusters and calculate ligand/receptor averages for pvalue calculations
 #' @param knowledgebase_version The chosen knowledgebase version
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
+#' @param seuratObject Counts/Metadata stored in a Seurat Object.
 #'
 #' @return NULL
 #'
 #' @keywords internal
-CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor) {
+CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor, seuratObject) {
   # Loading Data ---------------------------------------------------------------
 
   output_dir <- "output"
@@ -32,28 +33,45 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
   results <- NULL
   results_names <- NULL
 
-  print("Reading in metadata...")
+  if(!is.null(seuratObject)) {
+    seuratObj <- readRDS(seuratObject)
 
-  metadata <- read.csv(metadata_fn) %>%
-    rename("celltype" = cluster)
+    metadata <- seuratObj[[]]
+    metadata <- rownames_to_column(metadata, "X")
+    counts <- seuratObj[["RNA"]]$counts
 
-  if("LibraryID" %in% colnames(metadata)) {
-    print("Splitting metadata...")
-    multiple_samples <- TRUE
-    metadata_split <- split(metadata, metadata$LibraryID)
-  }
+    metadata <- metadata %>%
+      rename("celltype" = cluster)
 
-  print("Reading in counts...")
-
-  # Read in Counts
-  file_type = tools::file_ext(counts_fn)
-
-  if(identical(file_type, "txt")) { # Textfile
-    counts <- read.table(counts_fn, header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
-  } else if(identical(file_type, "csv")) { # CSV file
-    counts <- read.csv(counts_fn, row.names = 1, check.names = FALSE)
+    if("LibraryID" %in% colnames(metadata)) {
+      print("Splitting metadata...")
+      multiple_samples <- TRUE
+      metadata_split <- split(metadata, metadata$LibraryID)
+    }
   } else {
-    stop("Unsupported filetype for the count matrix. Please upload either a .CSV or properly delimited .TXT file.")
+    print("Reading in metadata...")
+
+    metadata <- read.csv(metadata_fn) %>%
+      rename("celltype" = cluster)
+
+    if("LibraryID" %in% colnames(metadata)) {
+      print("Splitting metadata...")
+      multiple_samples <- TRUE
+      metadata_split <- split(metadata, metadata$LibraryID)
+    }
+
+    print("Reading in counts...")
+
+    # Read in Counts
+    file_type = tools::file_ext(counts_fn)
+
+    if(identical(file_type, "txt")) { # Textfile
+      counts <- read.table(counts_fn, header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
+    } else if(identical(file_type, "csv")) { # CSV file
+      counts <- read.csv(counts_fn, row.names = 1, check.names = FALSE)
+    } else {
+      stop("Unsupported filetype for the count matrix. Please upload either a .CSV or properly delimited .TXT file.")
+    }
   }
 
   print("Creating SeuratObjects...")
@@ -327,14 +345,14 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     cell_columns <- setdiff(names(all_averages), c("sample", "gene", "gene_type"))
 
     all_averages_filtered <- all_averages #%>%
-      # rowwise() %>%
-      # mutate(nonzero_proportion = {
-      #   expression_vals <- c_across(all_of(cell_columns))
-      #   nonzero_count <- sum(expression_vals != 0)
-      #   nonzero_count / length(expression_vals)
-      # }) %>%
-      # filter(nonzero_proportion > 0) %>% # Exclude those with no cell expression
-      # select(-nonzero_proportion)
+    # rowwise() %>%
+    # mutate(nonzero_proportion = {
+    #   expression_vals <- c_across(all_of(cell_columns))
+    #   nonzero_count <- sum(expression_vals != 0)
+    #   nonzero_count / length(expression_vals)
+    # }) %>%
+    # filter(nonzero_proportion > 0) %>% # Exclude those with no cell expression
+    # select(-nonzero_proportion)
 
     all_averages_filtered <- data.frame(append(all_averages_filtered, c(Pathway="other"), after=0))
 

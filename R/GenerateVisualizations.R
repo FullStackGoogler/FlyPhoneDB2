@@ -15,25 +15,45 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor)
 
   multiple_samples <- FALSE # Whether or not we analyse more than one dataset #TODO: Could pass in from GenerateVis(); some lines may be redundant
 
-  metadata <- read.csv(paste0(metadata_fn)) %>%
-    rename("celltype" = cluster)
+  if(!is.null(seuratObject)) {
+    seuratObj <- readRDS(seuratObject)
 
-  if("LibraryID" %in% colnames(metadata)) {
-    multiple_samples <- TRUE
-    metadata_split <- split(metadata, metadata$LibraryID)
-  }
+    metadata <- seuratObj[[]]
+    metadata <- rownames_to_column(metadata, "X")
+    counts <- seuratObj[["RNA"]]$counts
 
-  # Read in Counts
-  file_type = tools::file_ext(counts_fn)
+    metadata <- metadata %>%
+      rename("celltype" = cluster)
 
-  if(identical(file_type, "txt")) { # Textfile
-    # TODO: Potentially replace with read_delim() for auto-detection of sep symbol
-    #counts <- read_delim(paste0(counts_fn))
-    counts <- read.table(paste0(counts_fn), header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
-  } else if(identical(file_type, "csv")) { # CSV file
-    counts <- read.csv(paste0(counts_fn), row.names = 1, check.names = FALSE)
+    if("LibraryID" %in% colnames(metadata)) {
+      print("Splitting metadata...")
+      multiple_samples <- TRUE
+      metadata_split <- split(metadata, metadata$LibraryID)
+    }
   } else {
-    stop("Unsupported filetype. Please upload either a .CSV or space-delimited .TXT file.")
+    print("Reading in metadata...")
+
+    metadata <- read.csv(metadata_fn) %>%
+      rename("celltype" = cluster)
+
+    if("LibraryID" %in% colnames(metadata)) {
+      print("Splitting metadata...")
+      multiple_samples <- TRUE
+      metadata_split <- split(metadata, metadata$LibraryID)
+    }
+
+    print("Reading in counts...")
+
+    # Read in Counts
+    file_type = tools::file_ext(counts_fn)
+
+    if(identical(file_type, "txt")) { # Textfile
+      counts <- read.table(counts_fn, header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
+    } else if(identical(file_type, "csv")) { # CSV file
+      counts <- read.csv(counts_fn, row.names = 1, check.names = FALSE)
+    } else {
+      stop("Unsupported filetype for the count matrix. Please upload either a .CSV or properly delimited .TXT file.")
+    }
   }
 
   if(multiple_samples) { # multi sample without DEG provided
@@ -169,6 +189,9 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
   df2 <- read_excel(data_path, sheet = 2)
   df3 <- read_excel(data_path, sheet = 3)
   #df4 <- read_excel(data_path, sheet = 4)
+
+  df2$score_control <- 0
+  df3$score_mutant <- 0
 
   interaction_df <- rbind(df1, df2, df3)
   interaction_df$secretor <- gsub("/", "_", interaction_df$secretor) #FIXME? Mainly "ISC/EB" is problem
@@ -493,6 +516,9 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
   df3 <- read_excel(data_path, sheet = 3)
   #df4 <- read_excel(data_path, sheet = 4)
 
+  df2$score_control <- 0
+  df3$score_mutant <- 0
+
   interaction_df <- rbind(df1, df2, df3)
   interaction_df$secretor <- gsub("/", "_", interaction_df$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_df$receptor <- gsub("/", "_", interaction_df$receptor) #FIXME? Mainly "ISC/EB" is problem
@@ -721,6 +747,9 @@ InteractionStrengthMultiSample <- function(data_path) {
   df1 <- read_excel(data_path, sheet = 1)
   df2 <- read_excel(data_path, sheet = 2)
   df3 <- read_excel(data_path, sheet = 3)
+
+  df2$score_control <- 0
+  df3$score_mutant <- 0
 
   interaction_df <- rbind(df1, df2, df3)
   interaction_df$secretor <- gsub("/", "_", interaction_df$secretor)
