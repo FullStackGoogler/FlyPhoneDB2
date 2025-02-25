@@ -11,7 +11,8 @@ RunFlyPhone(
   pct_filter = 0.1,
   knowledgebase_version,
   perm_times = 1000,
-  delimitor = "\\t"
+  delimitor = "\\t",
+  seuratObject = NULL
 )
 }
 \arguments{

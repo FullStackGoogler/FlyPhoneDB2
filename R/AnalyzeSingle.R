@@ -40,8 +40,14 @@ AnalyzeSingle <- function(results_list, knowledgebase_version) {
         "GeneID_receptor", "FBgn_receptor", "Rank", "Version",
         "Source", "Interaction", "Ligand_annotation", "Ligand_signalP_prediction",
         "Receptor_annotation", "Receptor_TM_prediction", "More_information",
-        "Mammalian_ligand-receptor pair?", "Human_ligand_receptor_ pair(s)",
-        "Mouse_ligand_receptor_ pair(s)", "ligand paralogs?", "receptor paralogs?")
+        "Mammalian_ligand.receptor.pair.", "Human_ligand_receptor_.pair.s.",
+        "Mouse_ligand_receptor_.pair.s.", "ligand.paralogs.", "receptor.paralogs.")
+      # c("Pair_ID", "GeneID_secreted", "FBgn_secreted",
+      #   "GeneID_receptor", "FBgn_receptor", "Rank", "Version",
+      #   "Source", "Interaction", "Ligand_annotation", "Ligand_signalP_prediction",
+      #   "Receptor_annotation", "Receptor_TM_prediction", "More_information",
+      #   "Mammalian_ligand-receptor pair?", "Human_ligand_receptor_ pair(s)",
+      #   "Mouse_ligand_receptor_ pair(s)", "ligand paralogs?", "receptor paralogs?")
     }
 
     # pivot data from wide to long

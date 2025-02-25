@@ -1,12 +1,12 @@
-GenerateVisualizations <- function(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor) {
+GenerateVisualizations <- function(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor, seuratObject) {
   if(doMultivis) {
     doMultiVisualization(pathwayObj)
   } else {
-    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor)
+    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject)
   }
 }
 
-doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor) {
+doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject) {
   counts <- NULL
   metadata <- NULL
 

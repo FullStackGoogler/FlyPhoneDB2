@@ -11,7 +11,8 @@ CalculateInteractions(
   pathway_components,
   perm_times,
   knowledgebase_version,
-  delimitor
+  delimitor,
+  seuratObject
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ CalculateInteractions(
 \item{knowledgebase_version}{The chosen knowledgebase version}
 
 \item{delimitor}{The separator for the counts file if it is a .txt file. Default is tab.}
+
+\item{seuratObject}{Counts/Metadata stored in a Seurat Object.}
 }
 \description{
 Reads in user inputted counts/metadata file pairing and calculates
