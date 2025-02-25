@@ -719,7 +719,6 @@ ChordDiagramSingleSample <- function(data_path) {
   sample_name <- sub(".*/([^/]+)_([^/]+)\\.csv$", "\\2", data_path)
   name_extension <- paste0(sample_name, "_")
 
-
   # Print cell types to std out, assign color to each cell type
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
 
@@ -738,6 +737,11 @@ ChordDiagramSingleSample <- function(data_path) {
   #celltypes <- names(polychrome_pal)
   celltypes <- na.omit(names(color_palette))
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
+
+  # Find the maximum width required for cell types
+  longest_name_length <- max(nchar(celltypes))
+  # Compute the width and height multiplier based on the longest name
+  width_height_multiplier <- longest_name_length / 20
 
   for(celltype in celltypes) {
     print(paste0("Making diagram for celltype: ", celltype))
@@ -766,8 +770,8 @@ ChordDiagramSingleSample <- function(data_path) {
     sorted_chord_df <- sorted_chord_df[,c(5,4,6)]
 
     png(filename,
-        width = 10,
-        height = 10,
+        width = 10 * width_height_multiplier,
+        height = 10 * width_height_multiplier,
         units = "in",
         res = 300)
 
