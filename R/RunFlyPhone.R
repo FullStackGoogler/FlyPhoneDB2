@@ -25,8 +25,10 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
   DEG_exists <- !is.null(DEG) && file.exists(DEG)
 
   # Load in annotation and pathway core component data depending on the knowledgebase version chosen
-  annotationObj <- load_object(getAnnotationFile(knowledgebase_version))
-  pathwayObj <- load_object(getPathwayFile(knowledgebase_version))
+  # annotationObj <- load_object(getAnnotationFile(knowledgebase_version))
+  # pathwayObj <- load_object(getPathwayFile(knowledgebase_version))
+  annotationObj <- getAnnotationFile(knowledgebase_version)
+  pathwayObj <- getPathwayFile(knowledgebase_version)
 
   # Initial subfolder creation
   dir.create("output")
@@ -85,13 +87,13 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
 # Gets the appropriate ligand/receptor pair dataset based on the knowledgebase version chosen
 getAnnotationFile <- function(knowledgebase_version) {
   if(identical(knowledgebase_version, "Version 1")) {
-    return("data/V1.rda")
+    return(FlyPhone::V1)
   } else if(identical(knowledgebase_version, "Version 2 High")) {
-    return("data/V2H.rda")
+    return(FlyPhone::V2H)
   } else if(identical(knowledgebase_version, "Version 2 High/Moderate")) {
-    return("data/V2HM.rda")
+    return(FlyPhone::V2HM)
   } else if(identical(knowledgebase_version, "Version 2 All")) {
-    return("data/V2A.rda")
+    return(FlyPhone::V2A)
   } else {
     stop("Not a valid knowledgebase version! Options include: \"Version 1\",\"Version 2 All\", \"Version 2 High\", or \"Version 2 High/Moderate\".")
   }
@@ -101,10 +103,10 @@ getAnnotationFile <- function(knowledgebase_version) {
 getPathwayFile <- function(knowledgebase_version) {
   if(identical(knowledgebase_version, "Version 1")) {
     #return("./annotation/Pathway_core_components_2021vs1_clean.txt")
-    return("data/pathway_components_v1.rda")
+    return(FlyPhone::pathway_components_v1)
   } else {
     #return("./annotation/Pathway_core_components_Version2-3_final.txt")
-    return("data/pathway_components_v2.rda")
+    return(FlyPhone::pathway_components_v1)
   }
 }
 
