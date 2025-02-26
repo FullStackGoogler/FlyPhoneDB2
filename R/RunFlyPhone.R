@@ -87,13 +87,13 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
 # Gets the appropriate ligand/receptor pair dataset based on the knowledgebase version chosen
 getAnnotationFile <- function(knowledgebase_version) {
   if(identical(knowledgebase_version, "Version 1")) {
-    return(FlyPhone::V1)
+    return(FlyPhone:::V1)
   } else if(identical(knowledgebase_version, "Version 2 High")) {
-    return(FlyPhone::V2H)
+    return(FlyPhone:::V2H)
   } else if(identical(knowledgebase_version, "Version 2 High/Moderate")) {
-    return(FlyPhone::V2HM)
+    return(FlyPhone:::V2HM)
   } else if(identical(knowledgebase_version, "Version 2 All")) {
-    return(FlyPhone::V2A)
+    return(FlyPhone:::V2A)
   } else {
     stop("Not a valid knowledgebase version! Options include: \"Version 1\",\"Version 2 All\", \"Version 2 High\", or \"Version 2 High/Moderate\".")
   }
@@ -103,10 +103,10 @@ getAnnotationFile <- function(knowledgebase_version) {
 getPathwayFile <- function(knowledgebase_version) {
   if(identical(knowledgebase_version, "Version 1")) {
     #return("./annotation/Pathway_core_components_2021vs1_clean.txt")
-    return(FlyPhone::pathway_components_v1)
+    return(FlyPhone:::pathway_components_v1)
   } else {
     #return("./annotation/Pathway_core_components_Version2-3_final.txt")
-    return(FlyPhone::pathway_components_v1)
+    return(FlyPhone:::pathway_components_v1)
   }
 }
 
