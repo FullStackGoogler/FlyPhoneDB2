@@ -106,7 +106,7 @@ getPathwayFile <- function(knowledgebase_version) {
     return(FlyPhone:::pathway_components_v1)
   } else {
     #return("./annotation/Pathway_core_components_Version2-3_final.txt")
-    return(FlyPhone:::pathway_components_v1)
+    return(FlyPhone:::pathway_components_v2)
   }
 }
 
