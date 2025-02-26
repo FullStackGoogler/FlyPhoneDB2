@@ -234,8 +234,8 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
   names(color_palette) <- sort(unique(append(interaction_df$secretor, interaction_df$receptor)))
-  celltypes <- names(palette_colors)
-  celltypes <- na.omit(names(palette_colors))
+  celltypes <- names(color_palette)
+  celltypes <- na.omit(names(color_palette))
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
 
   for(celltype in celltypes) {
@@ -319,7 +319,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
       coords_scale <- scale(coords)
 
       V(g)$size <- 20
-      V(g)$color <- palette_colors[V(g)$name]  # Use the corrected color palette
+      V(g)$color <- color_palette[V(g)$name]  # Use the corrected color palette
       V(g)$label.color <- "black"
       V(g)$label.cex <- 0.8
       if (max(E(g)$weight) == min(E(g)$weight)) {
