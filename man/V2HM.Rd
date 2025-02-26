@@ -3,11 +3,11 @@
 \docType{data}
 \name{V2HM}
 \alias{V2HM}
-\title{FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025}
+\title{FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025}
 \format{
 \subsection{\verb{Version 2 High/Moderate}}{
 
-A data frame with 906 rows and 22 columns:
+A data frame with 910 rows and 22 columns:
 }
 }
 \source{

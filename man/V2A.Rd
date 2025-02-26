@@ -3,11 +3,11 @@
 \docType{data}
 \name{V2A}
 \alias{V2A}
-\title{FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025}
+\title{FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025}
 \format{
 \subsection{\verb{Version 2 All}}{
 
-A data frame with 1,853 rows and 22 columns:
+A data frame with 1,748 rows and 22 columns:
 }
 }
 \source{

@@ -3,7 +3,7 @@
 \docType{data}
 \name{pathway_components_v2}
 \alias{pathway_components_v2}
-\title{Pathway Core Components Version 2.3 - 2025}
+\title{Pathway Core Components Version 2.5 - 2025}
 \format{
 \subsection{\verb{Pathway Components V2}}{
 

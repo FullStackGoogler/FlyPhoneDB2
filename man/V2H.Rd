@@ -3,7 +3,7 @@
 \docType{data}
 \name{V2H}
 \alias{V2H}
-\title{FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025}
+\title{FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025}
 \format{
 \subsection{\verb{Version 2 High}}{
 

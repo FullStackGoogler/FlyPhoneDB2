@@ -9,18 +9,18 @@
 #' @source Manually curated
 "V1"
 
-#' FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025
+#' FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025
 #'
 #' Dataset of all ligand-receptor pairs for the major fly signaling pathways.
 #'
 #' @format ## `Version 2 All`
-#' A data frame with 1,853 rows and 22 columns:
+#' A data frame with 1,748 rows and 22 columns:
 #'
 #' @docType data
 #' @source Manually curated
 "V2A"
 
-#' FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025
+#' FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025
 #'
 #' Dataset of ligand-receptor pairs for the major fly signaling pathways that have a rank of "High".
 #'
@@ -31,12 +31,12 @@
 #' @source Manually curated
 "V2H"
 
-#' FlyPhone Ligand-Receptor Pairs Version 2.3 - 2025
+#' FlyPhone Ligand-Receptor Pairs Version 2.5 - 2025
 #'
 #' Dataset of all ligand-receptor pairs for the major fly signaling pathways.
 #'
 #' @format ## `Version 2 High/Moderate`
-#' A data frame with 906 rows and 22 columns:
+#' A data frame with 910 rows and 22 columns:
 #'
 #' @docType data
 #' @source Manually curated
@@ -54,7 +54,7 @@
 #' @source Manually curated
 "pathway_components_v1"
 
-#' Pathway Core Components Version 2.3 - 2025
+#' Pathway Core Components Version 2.5 - 2025
 #'
 #' Dataset of core components information for each signaling pathway.
 #'
