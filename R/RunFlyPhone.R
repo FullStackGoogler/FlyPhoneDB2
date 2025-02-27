@@ -80,6 +80,15 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
 
   # Remove the percentage expression file from the final output
   file.remove("./output/Percentage_Expression.csv")
+
+  # Create a textfile specifying the type of analysis done
+  if(isMultiSample & DEG_exists) {
+    write.table("Multi_DEG", "output_type.txt", row.names = FALSE, col.names = FALSE)
+  } else if (isMultiSample & !DEG_exists) {
+    write.table("Multi", "output_type.txt", row.names = FALSE, col.names = FALSE)
+  } else {
+    write.table("Single", "output_type.txt", row.names = FALSE, col.names = FALSE)
+  }
 }
 
 # Helper Functions -------------------------------------------------------------
