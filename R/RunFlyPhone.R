@@ -9,6 +9,8 @@
 #' @param knowledgebase_version Version of knowledgebase to use. Valid values are: "Version 1", "Version 2 All", "Version 2 High", and "Version 2 High/Moderate".
 #' @param perm_times The number of times to shuffle cluster alignments and calculate ligand/receptor averages for p-value calculation in raw interaction scoring. Default value of 1000.
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
+#' @param control_name The name of the control sample, if applicable.
+#' @param mutant_name The name of the mutant sample, if applicable.
 #'
 #' @return NULL
 #'
@@ -18,7 +20,7 @@
 #' RunFlyPhone(counts_fn = "GSE218641_filtered_feature_bc_matrix.txt", metadata_fn = "GSE218641_GEO_metadata_Afroditi_Petsakou", DEG = "Recovery_vs_Homeostasis_DEG.csv", pct_filter = 0.05, knowledgebase_version = "Version 2 All", perm_times = 100, delimitor = " ")
 #'
 #' @export
-RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, knowledgebase_version, perm_times = 1000, delimitor = "\t", seuratObject = NULL) {
+RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_filter = 0.1, knowledgebase_version, perm_times = 1000, delimitor = "\t", seuratObject = NULL, control_name = NULL, mutant_name = NULL) {
   # Preprocessing --------------------------------------------------------------
 
   # Boolean for checking if a DEG file is provided
@@ -64,7 +66,7 @@ RunFlyPhone <- function(counts_fn, metadata_fn, DEG = NULL, pct_filter = 0.1, kn
 
   # Only perform multi-sample analysis if a DEG file is provided
   if(isMultiSample & DEG_exists) {
-    list_test <- AnalyzeMultiple(results, DEG, pct_filter) #FIXME: Might not actually use this variable at all
+    list_test <- AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name) #FIXME: Might not actually use this variable at all
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
     AnalyzeSingle(results, knowledgebase_version)

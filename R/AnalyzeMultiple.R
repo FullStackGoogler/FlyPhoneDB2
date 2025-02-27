@@ -55,19 +55,21 @@ ConvertToLongTable <- function(results) {
 #' @param results_list Results from CalculateInteractions()
 #' @param DEG_fn Differentially expressed genes file path
 #' @param pct_filter Percentage threshold to filter generated Percentage_Expression.csv file for relevant genes
+#' @param control_name The name of the control sample, if applicable.
+#' @param mutant_name The name of the mutant sample, if applicable.
 #'
 #' @return Excel File
 #'
 #' @keywords internal
-AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter) {
+AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, mutant_name) {
   # TODO: This allows for any amount, tho it seems we only need two (control/mutant).
   long_results <- ConvertToLongTable(results_list)
 
-  control_sample <- names(results_list)[1]
-  mutant_sample <- names(results_list)[2]
+  control_sample <- control_name
+  mutant_sample <- mutant_name
 
-  control_interactions <- long_results[[1]] %>% rename(score_control = score, pval_control = pval)
-  mutant_interactions <- long_results[[2]] %>% rename(score_mutant = score, pval_mutant = pval)
+  control_interactions <- long_results[[control_sample]] %>% rename(score_control = score, pval_control = pval)
+  mutant_interactions <- long_results[[mutant_sample]] %>% rename(score_mutant = score, pval_mutant = pval)
 
   #FIXME: Look for other cases that might mess up code
   control_interactions$secretor <- gsub("/", "_", control_interactions$secretor)
