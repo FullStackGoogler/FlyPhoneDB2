@@ -371,7 +371,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- sub(".*/([^/]+)_([^/]+)\\.csv$", "\\2", data_path)
+  sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
   name_extension <- paste0(sample_name, "_")
 
   # Check if using specific or non-specific LR interactions between clusters
@@ -716,7 +716,7 @@ ChordDiagramSingleSample <- function(data_path) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- sub(".*/([^/]+)_([^/]+)\\.csv$", "\\2", data_path)
+  sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
   name_extension <- paste0(sample_name, "_")
 
   # Print cell types to std out, assign color to each cell type
