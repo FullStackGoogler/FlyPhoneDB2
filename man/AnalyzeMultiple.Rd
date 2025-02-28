@@ -4,12 +4,16 @@
 \alias{AnalyzeMultiple}
 \title{Analysis for multiple samples}
 \usage{
-AnalyzeMultiple(results_list, DEF_fn, pct_filter)
+AnalyzeMultiple(results_list, DEF_fn, pct_filter, control_name, mutant_name)
 }
 \arguments{
 \item{results_list}{Results from CalculateInteractions()}
 
 \item{pct_filter}{Percentage threshold to filter generated Percentage_Expression.csv file for relevant genes}
+
+\item{control_name}{The name of the control sample, if applicable.}
+
+\item{mutant_name}{The name of the mutant sample, if applicable.}
 
 \item{DEG_fn}{Differentially expressed genes file path}
 }
