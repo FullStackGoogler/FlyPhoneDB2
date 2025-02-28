@@ -147,7 +147,7 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
     print(p)
     cat("\n")
     name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
-    ggsave(p, file = paste0(output_dirPath, "/", i, name_extension, ".png"),   # The directory you want to save the file in
+    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "_", i), name_extension, ".png"),   # The directory you want to save the file in
            width = 18, # The width of the plot in inches
            height = 12)
   }
@@ -190,7 +190,7 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
     print(p)
     cat("\n")
     name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
-    ggsave(p, file = paste0(output_dirPath, "/", i, name_extension, ".png"),   # The directory you want to save the file in
+    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "_", i), name_extension, ".png"),   # The directory you want to save the file in
            width = 20, # The width of the plot in inches
            height = 12)
   }
