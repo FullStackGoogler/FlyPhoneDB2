@@ -924,8 +924,7 @@ InteractionStrengthSingleSample <- function(fileList) {
   # Plot each dataset with common scales
   for (i in seq_along(fileList)) {
     file <- fileList[i]
-    sample_name <- sub("^output/interactions/interactions_long_filtered/interaction_long_filtered_", "", file) # TODO: Pretty specific regex, may or may not need to make more general
-    sample_name <- sub("\\.csv$", "", sample_name)
+    sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", file)
     scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))
     scores[is.na(scores)] <- 0
     scores <- scores %>%
