@@ -15,6 +15,12 @@ AnalyzeSingle <- function(results_list, knowledgebase_version) {
   for(name in names(results_list)) {
     interactions_list <- results_list[[name]]
 
+    perc.expr <- read.csv(".temp/Percentage_Expression.csv")
+
+    filtered_expr <- perc.expr %>%
+      filter(colnames(perc.expr[name]) >= pct_filter) %>%
+      select(Gene, celltype)
+
     if(identical(knowledgebase_version, "Version 1")) {
       colnames(interactions_list)[c(3, 6, 7)] <- c("Gene_secreted","Gene_receptor","pathway_receptor")
     } else {
@@ -49,6 +55,11 @@ AnalyzeSingle <- function(results_list, knowledgebase_version) {
       #   "Mammalian_ligand-receptor pair?", "Human_ligand_receptor_ pair(s)",
       #   "Mouse_ligand_receptor_ pair(s)", "ligand paralogs?", "receptor paralogs?")
     }
+
+    # Only keep genes with significant percentage expression
+    interactions_list <- interactions_list %>%
+      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "secretor")) %>%
+      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "recepteor")) %>%
 
     # pivot data from wide to long
     df_long <- interactions_list %>%
