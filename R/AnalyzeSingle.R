@@ -59,7 +59,7 @@ AnalyzeSingle <- function(results_list, knowledgebase_version) {
     # Only keep genes with significant percentage expression
     interactions_list <- interactions_list %>%
       inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "secretor")) %>%
-      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "recepteor")) %>%
+      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "recepteor"))
 
     # pivot data from wide to long
     df_long <- interactions_list %>%
