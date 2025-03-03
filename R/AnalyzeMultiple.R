@@ -65,8 +65,8 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   # TODO: This allows for any amount, tho it seems we only need two (control/mutant).
   long_results <- ConvertToLongTable(results_list)
 
-  control_sample <- control_name
-  mutant_sample <- mutant_name
+  control_sample <- gsub("[_/, ]", "-", control_name)
+  mutant_sample <- gsub("[_/, ]", "-", mutant_name)
 
   control_interactions <- long_results[[control_sample]] %>% rename(score_control = score, pval_control = pval)
   mutant_interactions <- long_results[[mutant_sample]] %>% rename(score_mutant = score, pval_mutant = pval)
@@ -87,8 +87,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
 
   # First, filter perc.expr for relevant genes and pct.1 >= 0.1
   filtered_expr <- perc.expr %>%
-    #filter(Homeostasis >= 0.1) %>%
-    filter(colnames(perc.expr[2]) >= pct_filter) %>%
+    filter(perc.expr[[control_sample]] >= pct_filter) %>%
     select(Gene, celltype)
 
   # Separate the filtering for secreted and receptor genes:
@@ -109,8 +108,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
 
   # First, filter perc.expr for relevant genes and pct.2 >= 0.1
   filtered_expr <- perc.expr %>%
-    #filter(Recovery_d2 >= 0.1) %>%
-    filter(colnames(perc.expr[3]) >= pct_filter) %>%
+    filter(perc.expr[[mutant_sample]] >= pct_filter) %>%
     select(Gene, celltype)
 
   # Separate the filtering for secreted and receptor genes:
@@ -230,7 +228,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   writeData(wb, sheet = "Unchanged", unchanged_signaling)
 
   # Save the workbook
-  saveWorkbook(wb, "output/interactions/interactions_multi/results.xlsx", overwrite = TRUE)
+  saveWorkbook(wb, paste0("output/comparison/results.xlsx"), overwrite = TRUE)
 
   print("AnalyzeMultiple() results saved!")
 

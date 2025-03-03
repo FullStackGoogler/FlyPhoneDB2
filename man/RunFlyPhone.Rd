@@ -14,7 +14,8 @@ RunFlyPhone(
   delimitor = "\\t",
   seuratObject = NULL,
   control_name = NULL,
-  mutant_name = NULL
+  mutant_name = NULL,
+  deletePE = TRUE
 )
 }
 \arguments{
@@ -35,13 +36,9 @@ RunFlyPhone(
 \item{control_name}{The name of the control sample, if applicable.}
 
 \item{mutant_name}{The name of the mutant sample, if applicable.}
+
+\item{deletePE}{Whether or not to delete the percentage expression file after the pipeline is finished. Defaults to true.}
 }
 \description{
 Wrapper function for the FlyPhone pipeline.
-}
-\examples{
-# Afroditi data (GSE218641)
-RunFlyPhone("GSE218641_filtered_feature_bc_matrix.txt", "GSE218641_GEO_metadata_Afroditi_Petsakou", knowledgebase_version = "Version 2 All")
-RunFlyPhone(counts_fn = "GSE218641_filtered_feature_bc_matrix.txt", metadata_fn = "GSE218641_GEO_metadata_Afroditi_Petsakou", DEG = "Recovery_vs_Homeostasis_DEG.csv", pct_filter = 0.05, knowledgebase_version = "Version 2 All", perm_times = 100, delimitor = " ")
-
 }

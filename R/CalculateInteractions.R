@@ -123,7 +123,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
       pivot_longer(
         cols = all_of(gene_cols),
         names_to = "Gene",
-        values_to = seuratObj@project.name
+        values_to = gsub("[_/, ]", "-", seuratObj@project.name)
       )
 
     result_df <- result_df[, c(2, 3, 1)]
@@ -136,7 +136,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     select(Gene, everything()) %>%
     relocate(celltype, .after = last_col())
 
-  write.csv(pctexpr_final, ".temp/Percentage_Expression.csv")
+  write.csv(pctexpr_final, ".temp/Percentage_Expression.csv", row.names = FALSE)
 
   print("Percentage Expression saved to \".temp/Percentage_Expression.csv\"")
 
@@ -344,7 +344,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
     cell_columns <- setdiff(names(all_averages), c("sample", "gene", "gene_type"))
 
-    all_averages_filtered <- all_averages #%>%
+    all_averages_filtered <- all_averages # %>%
     # rowwise() %>%
     # mutate(nonzero_proportion = {
     #   expression_vals <- c_across(all_of(cell_columns))
@@ -368,13 +368,18 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
         }
       }
 
-    write.csv(all_averages_paths, paste0(output_dir, "/expression_levels/pathway_expressions_", seuratObj@project.name, ".csv"), row.names = FALSE)
+    sampleName <- gsub("[_/, ]", "-", seuratObj@project.name)
 
-    cat("FlyPhone mean expression level file saved to:", paste0(output_dir, "/expression_levels/pathway_expressions_", seuratObj@project.name, ".csv"), "\n")
+    dir.create(paste0(output_dir, "/", sampleName))
+    dir.create(paste0(output_dir, "/", sampleName, "/interaction-scores"))
+
+    write.csv(all_averages_paths, paste0(paste0(output_dir, "/", sampleName), "/pathway-expression-levels_", sampleName, ".csv"), row.names = FALSE)
+
+    cat("FlyPhone mean expression level file saved to:", paste0(paste0(output_dir, "/", sampleName), "/pathway-expression-levels_", sampleName, ".csv"), "\n")
 
     # Save output
     dir.create(paste0(output_dir), showWarnings = FALSE)
-    output_file_path = paste0(output_dir, "/interactions/interactions_raw/", output_base_filename, seuratObj@project.name, ".csv")
+    output_file_path = paste0(paste0(output_dir, "/", sampleName, "/interaction-scores"), "/", output_base_filename, sampleName, ".csv")
     write.csv(LR_pairs_one, file = output_file_path, row.names = FALSE)
 
     cat("FlyPhone raw interaction score saved to:", output_file_path, "\n")
@@ -383,8 +388,12 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     results[[length(results)+1]] <- LR_pairs_one
   }
 
+  # Save sample names for future functions
+  formattedNames <- (sapply(results_names, function(x) gsub("[_/, ]", "-", x)))
+  write.table(formattedNames, "output/sample_names.txt", row.names = FALSE, col.names = FALSE, sep = "\n")
+
   # Add names onto results and return
-  results <- setNames(results, results_names)
+  results <- setNames(results, formattedNames)
   return(results)
 }
 

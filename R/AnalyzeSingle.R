@@ -7,6 +7,8 @@
 #' - 2: A filtered version with interaction scores that have a p-value less than 0.05
 #'
 #' @param results_list Results from CalculateInteractions()
+#' @param pct_filter The percentage expression threshold to filter by
+#' @param knowledgebase_version The knowledgebase version used
 #'
 #' @return CSV Files
 #'
@@ -15,10 +17,10 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version) {
   for(name in names(results_list)) {
     interactions_list <- results_list[[name]]
 
-    perc.expr <- read.csv(".temp/Percentage_Expression.csv")
+    perc.expr <- read.csv(".temp/Percentage_Expression.csv", check.names = FALSE)
 
     filtered_expr <- perc.expr %>%
-      filter(colnames(perc.expr[name]) >= pct_filter) %>%
+      filter(perc.expr[[name]] >= pct_filter) %>%
       select(Gene, celltype)
 
     if(identical(knowledgebase_version, "Version 1")) {
@@ -43,23 +45,12 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version) {
         "standard", "interaction", "Source", "Additional_info_GO")
     } else {
       c("Pair_ID", "GeneID_secreted", "FBgn_secreted",
-        "GeneID_receptor", "FBgn_receptor", "Rank", "Version",
+        "GeneID_receptor", "FBgn_receptor", "rank", "Version",
         "Source", "Interaction", "Ligand_annotation", "Ligand_signalP_prediction",
         "Receptor_annotation", "Receptor_TM_prediction", "More_information",
         "Mammalian_ligand.receptor.pair.", "Human_ligand_receptor_.pair.s.",
         "Mouse_ligand_receptor_.pair.s.", "ligand.paralogs.", "receptor.paralogs.")
-      # c("Pair_ID", "GeneID_secreted", "FBgn_secreted",
-      #   "GeneID_receptor", "FBgn_receptor", "Rank", "Version",
-      #   "Source", "Interaction", "Ligand_annotation", "Ligand_signalP_prediction",
-      #   "Receptor_annotation", "Receptor_TM_prediction", "More_information",
-      #   "Mammalian_ligand-receptor pair?", "Human_ligand_receptor_ pair(s)",
-      #   "Mouse_ligand_receptor_ pair(s)", "ligand paralogs?", "receptor paralogs?")
     }
-
-    # Only keep genes with significant percentage expression
-    interactions_list <- interactions_list %>%
-      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "secretor")) %>%
-      inner_join(filtered_expr, by = c("Gene" = "Gene_secreted", "celltype" = "receptor"))
 
     # pivot data from wide to long
     df_long <- interactions_list %>%
@@ -86,9 +77,14 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version) {
     score_df_filtered <- score_df %>%
       filter(pval < 0.05)
 
-    write.csv(score_df_filtered, paste0("output/interactions/interactions_long_filtered/interaction_long_filtered_", name, ".csv"), row.names = FALSE)
-    write.csv(score_df, paste0("output/interactions/interactions_long/interaction_long_", name,".csv"), row.names = FALSE)
+    # Only keep genes with significant percentage expression
+    score_df_filtered <- score_df_filtered %>%
+      inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "secretor" = "celltype")) %>%
+      inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "receptor" = "celltype"))
 
-    print("AnalyzeSingle() results saved!")
+    write.csv(score_df_filtered, paste0("output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"), row.names = FALSE)
+    write.csv(score_df, paste0("output/", name, "/interaction-scores/interaction-long_", name, ".csv"), row.names = FALSE)
+
+    print(paste0("AnalyzeSingle() results for: ", name, " saved!"))
   }
 }

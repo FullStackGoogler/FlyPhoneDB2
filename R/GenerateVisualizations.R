@@ -70,11 +70,14 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
       DotPlotSingleSample(counts, metadata, pathwayObj, "")
   }
 
-  # Can uncomment if non filtered long interaction files are wanted
-  #filelist_long <- list.files("output/interactions/interactions_long", full.names = TRUE)
-  filelist_long_filtered <- list.files("output/interactions/interactions_long_filtered", full.names = TRUE)
-  #filelist <- c(filelist_long, filelist_long_filtered)
-  filelist <- filelist_long_filtered
+  sampleNames <- gsub('^"|"$', '', readLines("output/sample_names.txt"))
+
+  filelist <- list()
+
+  for(name in sampleNames) {
+    filelist <- append(filelist, paste0("output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"))
+  }
+
   for(curr_file in filelist) {
     CirclePlotSingleSample(pathwayObj, curr_file)
     ChordDiagramSingleSample(curr_file)
@@ -84,7 +87,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
 }
 
 doMultiVisualization <- function(pathwayObj) {
-  data_path <- "output/interactions/interactions_multi/results.xlsx"
+  data_path <- "output/comparison/results.xlsx"
 
   ChordDiagramMultiSample(data_path, pathwayObj)
   CirclePlotMultiSample(data_path, pathwayObj)
@@ -94,7 +97,10 @@ doMultiVisualization <- function(pathwayObj) {
 # Visualization Functions ------------------------------------------------------
 
 HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
-  output_dirPath <- "output/visualizations/heatmaps"
+  # Format name
+  sample_name <- gsub("[_/, ]", "-", sample_name)
+
+  output_dirPath <- paste0("output/", sample_name, "/heatmaps")
 
   seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
   seuratObj <- NormalizeData(seuratObj)
@@ -154,7 +160,10 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
 }
 
 DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
-  output_dirPath <- "output/visualizations/dotplots"
+  # Format name
+  sample_name <- gsub("[_/, ]", "-", sample_name)
+
+  output_dirPath <- paste0("output/", sample_name, "/dotplots")
 
   seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
   Idents(seuratObj) <- "celltype"
@@ -197,7 +206,7 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
 }
 
 CirclePlotMultiSample <- function(data_path, pathwayObj) {
-  output_dir <- "output/visualizations/circleplots/"
+  output_dir <- "output/comparison/circleplots/"
 
   pathways <- unique(pathwayObj$pathway)
   pathways <-  gsub("/", "_", pathways) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
@@ -249,7 +258,6 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
       # Process mutant interactions
       interaction_pathway_long_mutant <- subset(interaction_list_mutant, pathway_receptor == pathway) %>%
         filter(secretor == celltype & receptor != celltype) %>%
-        filter(! receptor %in% c("Perineurial_SubPerineurial_glia", "Ensheathing_Glia", "astrocyte_like_glia")) %>%
         filter(mutant_score > 0) %>%
         mutate(variable = paste0(secretor, ".", receptor)) %>%
         group_by(variable) %>%
@@ -258,7 +266,6 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
       # Process control interactions
       interaction_pathway_long_control <- subset(interaction_list_control, pathway_receptor == pathway) %>%
         filter(secretor == celltype & receptor != celltype) %>%
-        filter(! receptor %in% c("Perineurial_SubPerineurial_glia", "Ensheathing_Glia", "astrocyte_like_glia")) %>%
         filter(control_score > 0) %>%
         mutate(variable = paste0(secretor, ".", receptor)) %>%
         group_by(variable) %>%
@@ -371,17 +378,12 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", data_path)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
   # Check if using specific or non-specific LR interactions between clusters
-  output_dir <- paste0("output/visualizations/circleplots/")
-  # output_dir <- ifelse(
-  #   filtered,
-  #   paste0("output/visualizations/circleplots/filtered/"),
-  #   paste0("output/visualizations/circleplots/non-specific/")
-  # )
+  output_dir <- paste0("output/", sample_name, "/circleplots/")
 
   # Print cell types to std out, assign color to each cell type
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
@@ -518,11 +520,6 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
           height = 10,
           units = "in",
           res = 300)
-      # png(file=paste0(output_dir, tolower(gsub("_long_filtered.csv|_long.csv", "", gsub("output/interaction_", "", data_path))), "/", celltype, "_", gsub(" ","_",pathway), ".png"),
-      #     width     = 10,
-      #     height    = 10,
-      #     units     = "in",
-      #     res       = 300)
 
       plot(g,edge.curved=0.2,vertex.shape=shape,
            layout=coords_scale,margin=margin,edge.arrow.size=0.5, vertex.frame.color="white"
@@ -547,7 +544,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
 }
 
 ChordDiagramMultiSample <- function(data_path, pathwayObj) {
-  output_dir <- paste0("output/visualizations/chord_diagrams/")
+  output_dir <- paste0("output/comparison/chord-diagrams/")
 
   df1 <- read_excel(data_path, sheet = 1)
   df2 <- read_excel(data_path, sheet = 2)
@@ -717,7 +714,7 @@ ChordDiagramSingleSample <- function(data_path) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", data_path)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
@@ -747,13 +744,7 @@ ChordDiagramSingleSample <- function(data_path) {
 
   for(celltype in celltypes) {
     print(paste0("Making diagram for celltype: ", celltype))
-    # Determine filename based on `filtered` flag
-    filename <- paste0("output/visualizations/chord_diagrams/", name_extension, gsub("[_/, ]", "-", celltype), "_chord-diagram.png")
-    # filename <- ifelse(
-    #   filtered,
-    #   paste0("output/visualizations/single_analysis/chord_diagrams/filtered/", name_extension, celltype, "_chord_diagram.png"),
-    #   paste0("output/visualizations/single_analysis/chord_diagrams/non-specific/", name_extension, celltype, "_chord_diagram.png")
-    # )
+    filename <- paste0("output/", sample_name, "/chord-diagrams/", name_extension, gsub("[_/, ]", "-", celltype), "_chord-diagram.png")
 
     # Process only celltype of interest
     interaction_list_cell  <- interaction_list %>% filter(secretor == celltype & receptor != celltype)
@@ -805,7 +796,7 @@ ChordDiagramSingleSample <- function(data_path) {
 }
 
 InteractionStrengthMultiSample <- function(data_path) {
-  output_dir <- "output/visualizations/interaction_strength/"
+  output_dir <- "output/comparison/"
 
   df1 <- read_excel(data_path, sheet = 1)
   df2 <- read_excel(data_path, sheet = 2)
@@ -897,7 +888,7 @@ InteractionStrengthSingleSample <- function(fileList) {
   all_incoming_scores_list <- list()
 
   for (i in seq_along(fileList)) {
-    file <- fileList[i]
+    file <- unlist(fileList[i])
     interaction_df <- read.csv(file)
 
     outgoing <- interaction_df %>%
@@ -925,8 +916,8 @@ InteractionStrengthSingleSample <- function(fileList) {
 
   # Plot each dataset with common scales
   for (i in seq_along(fileList)) {
-    file <- fileList[i]
-    sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", file)
+    file <- unlist(fileList[i])
+    sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", file)
     sample_name <- gsub("[_/, ]", "-", sample_name)
     scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))
     scores[is.na(scores)] <- 0
@@ -956,7 +947,7 @@ InteractionStrengthSingleSample <- function(fileList) {
 
     print(p)
 
-    output_filename <- paste0("output/visualizations/interaction_strength/", sample_name, "_interaction-strength.png")
+    output_filename <- paste0("output/", sample_name, "/", sample_name, "_interaction-strength.png")
     ggsave(output_filename, plot = p, width = 12, height = 10, dpi = 300)
   }
 }

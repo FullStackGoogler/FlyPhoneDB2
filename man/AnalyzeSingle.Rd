@@ -4,10 +4,14 @@
 \alias{AnalyzeSingle}
 \title{Analysis for single samples or multiple samples without a DEG file provided}
 \usage{
-AnalyzeSingle(results_list, knowledgebase_version)
+AnalyzeSingle(results_list, pct_filter, knowledgebase_version)
 }
 \arguments{
 \item{results_list}{Results from CalculateInteractions()}
+
+\item{pct_filter}{The percentage expression threshold to filter by}
+
+\item{knowledgebase_version}{The knowledgebase version used}
 }
 \value{
 CSV Files
