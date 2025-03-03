@@ -39,6 +39,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   dir.create("output/expression_levels")
   dir.create("output/visualizations")
   dir.create("output/visualizations/sample_visualizations")
+  dir.create(".temp")
 
   # Pipeline -------------------------------------------------------------------
 
@@ -81,7 +82,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   PathwayELVisualizations()
 
   # Remove the percentage expression file from the final output
-  file.remove("./output/Percentage_Expression.csv")
+  file.remove(".temp/Percentage_Expression.csv")
 
   # Create a textfile specifying the type of analysis done
   if(isMultiSample & DEG_exists) {

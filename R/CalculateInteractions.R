@@ -136,9 +136,9 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     select(Gene, everything()) %>%
     relocate(celltype, .after = last_col())
 
-  write.csv(pctexpr_final, "output/Percentage_Expression.csv")
+  write.csv(pctexpr_final, ".temp/Percentage_Expression.csv")
 
-  print("Percentage Expression saved to \"output/Percentage_Expression.csv\"")
+  print("Percentage Expression saved to \".temp/Percentage_Expression.csv\"")
 
   # Interaction Score Calculation ----------------------------------------------
   for(seuratObj in seurat_object_list) {

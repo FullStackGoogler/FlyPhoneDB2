@@ -81,7 +81,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   degs <- read.csv(DEF_fn, row.names = 1)
 
   # Remove LR pairs based off % expression of ligand or receptor
-  perc.expr <- read.csv("output/Percentage_Expression.csv")
+  perc.expr <- read.csv(".temp/Percentage_Expression.csv")
 
   ### Filter by % expression ###
 
