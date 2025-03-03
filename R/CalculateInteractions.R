@@ -390,7 +390,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
   # Save sample names for future functions
   formattedNames <- (sapply(results_names, function(x) gsub("[_/, ]", "-", x)))
-  write.table(formattedNames, "output/sample_names.txt", row.names = FALSE, col.names = FALSE, sep = "\n")
+  write.table(formattedNames, "sample_names.txt", row.names = FALSE, col.names = FALSE, sep = "\n")
 
   # Add names onto results and return
   results <- setNames(results, formattedNames)

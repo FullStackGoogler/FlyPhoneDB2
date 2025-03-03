@@ -56,6 +56,8 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     }
   }
 
+  sampleNames <- gsub('^"|"$', '', readLines("sample_names.txt"))
+
   if(multiple_samples) { # multi sample without DEG provided
     counts_split <- splitCounts(metadata_split, counts)
 
@@ -66,11 +68,9 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     }
   } else { # single sample
       #TODO: Can just initialize seuratObj here and pass in to functions that use it
-      HeatmapSingleSample(counts, metadata, pathwayObj, "") #TODO: Should single sample have a LibraryID somewhere?
-      DotPlotSingleSample(counts, metadata, pathwayObj, "")
+      HeatmapSingleSample(counts, metadata, pathwayObj, sampleNames)
+      DotPlotSingleSample(counts, metadata, pathwayObj, sampleNames)
   }
-
-  sampleNames <- gsub('^"|"$', '', readLines("output/sample_names.txt"))
 
   filelist <- list()
 
