@@ -146,8 +146,8 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
       )
     print(p)
     cat("\n")
-    name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
-    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "_", i), name_extension, ".png"),   # The directory you want to save the file in
+    name_extension <- if(!identical("", sample_name)) paste0("_", gsub("[_/, ]", "-", sample_name)) else ""
+    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "-", i), name_extension, ".png"),   # The directory you want to save the file in
            width = 18, # The width of the plot in inches
            height = 12)
   }
@@ -189,8 +189,8 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
       patchwork::plot_annotation(title = paste0(i), theme = theme(plot.title = element_text(hjust = 0.5)))
     print(p)
     cat("\n")
-    name_extension <- if(!identical("", sample_name)) paste0("_", sample_name) else ""
-    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "_", i), name_extension, ".png"),   # The directory you want to save the file in
+    name_extension <- if(!identical("", sample_name)) paste0("_", gsub("[_/, ]", "-", sample_name)) else ""
+    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "-", i), name_extension, ".png"),   # The directory you want to save the file in
            width = 20, # The width of the plot in inches
            height = 12)
   }
@@ -356,7 +356,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
     }
 
     # Save the workbook
-    saveWorkbook(wb, paste0(output_dir, celltype, "_summed_interaction_scores.xlsx"), overwrite = TRUE)
+    saveWorkbook(wb, paste0(output_dir, gsub("[_/, ]", "-", celltype), "_summed-interaction-scores.xlsx"), overwrite = TRUE)
   }
 }
 
@@ -372,6 +372,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
   sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
   # Check if using specific or non-specific LR interactions between clusters
@@ -512,7 +513,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
       E(g)$label.color<-edge.label.color
       E(g)$color<-V(g)$color[edge.start[,1]]
 
-      png(file=paste0(output_dir, name_extension, celltype, "_", gsub(" ","_",pathway), ".png"),
+      png(file=paste0(output_dir, name_extension, gsub("[_/, ]", "-", celltype), "_", gsub(" ","-",pathway), ".png"),
           width = 10,
           height = 10,
           units = "in",
@@ -541,7 +542,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
       cat(paste0("Done! Moving on... \n"))
     }
     # Save the workbook
-    saveWorkbook(wb, paste0(output_dir, name_extension, celltype,"_summed_interaction_scores.xlsx"), overwrite = TRUE)
+    saveWorkbook(wb, paste0(output_dir, name_extension, gsub("[_/, ]", "-", celltype),"_summed-interaction-scores.xlsx"), overwrite = TRUE)
   }
 }
 
@@ -706,7 +707,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
     unlink(temp_file_2)  # Remove temporary file
     f2 <- rasterGrob(image_2)
     cowplot::plot_grid(f1, f2, nrow = 1)  # Arrange side by side, left is always control
-    ggsave(filename = paste0(output_dir, celltype, "_chord_diagram.png"))
+    ggsave(filename = paste0(output_dir, gsub("[_/, ]", "-", celltype), "_chord-diagram.png"))
   }
 }
 
@@ -717,6 +718,7 @@ ChordDiagramSingleSample <- function(data_path) {
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
   sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
   # Print cell types to std out, assign color to each cell type
@@ -746,7 +748,7 @@ ChordDiagramSingleSample <- function(data_path) {
   for(celltype in celltypes) {
     print(paste0("Making diagram for celltype: ", celltype))
     # Determine filename based on `filtered` flag
-    filename <- paste0("output/visualizations/chord_diagrams/", name_extension, celltype, "_chord_diagram.png")
+    filename <- paste0("output/visualizations/chord_diagrams/", name_extension, gsub("[_/, ]", "-", celltype), "_chord-diagram.png")
     # filename <- ifelse(
     #   filtered,
     #   paste0("output/visualizations/single_analysis/chord_diagrams/filtered/", name_extension, celltype, "_chord_diagram.png"),
@@ -925,6 +927,7 @@ InteractionStrengthSingleSample <- function(fileList) {
   for (i in seq_along(fileList)) {
     file <- fileList[i]
     sample_name <- gsub("^.*interaction_long_filtered_(.*)\\.csv$", "\\1", file)
+    sample_name <- gsub("[_/, ]", "-", sample_name)
     scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))
     scores[is.na(scores)] <- 0
     scores <- scores %>%
@@ -953,7 +956,7 @@ InteractionStrengthSingleSample <- function(fileList) {
 
     print(p)
 
-    output_filename <- paste0("output/visualizations/interaction_strength/", sample_name, "_interaction_strength.png")
+    output_filename <- paste0("output/visualizations/interaction_strength/", sample_name, "_interaction-strength.png")
     ggsave(output_filename, plot = p, width = 12, height = 10, dpi = 300)
   }
 }
