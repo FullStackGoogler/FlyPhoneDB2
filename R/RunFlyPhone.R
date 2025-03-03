@@ -70,7 +70,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
     list_test <- AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name) #FIXME: Might not actually use this variable at all
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
-    AnalyzeSingle(results, knowledgebase_version)
+    AnalyzeSingle(results, pct_filter, knowledgebase_version)
   }
 
   doMultivis <- isMultiSample && DEG_exists
