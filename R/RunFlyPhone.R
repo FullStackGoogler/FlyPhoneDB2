@@ -44,6 +44,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   # Create the rest of the subfolders
   if(isMultiSample & DEG_exists) {
     dir.create("output/comparison")
+    dir.create("output/comparison/heatmaps")
     dir.create("output/comparison/chord-diagrams")
     dir.create("output/comparison/circleplots")
 
