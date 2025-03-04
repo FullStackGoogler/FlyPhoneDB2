@@ -146,6 +146,6 @@ PathwayELVisualizations <- function() {
         x = "Celltype",
         y = "Pathway"
       )
-    ggsave(paste0(output_dir, "/", sample_name, "_Pathways_Dotplot.png"), width = 8, height = 4, units = "in")
+    ggsave(paste0(output_dir, "/", sample_name, "_Pathways_Dotplot.png"), width = 12, height = 6, units = "in")
   }
 }
