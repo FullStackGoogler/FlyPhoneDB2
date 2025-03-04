@@ -706,10 +706,11 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
 
     # Clear previous circos plots
     circos.clear()
+    circos.par(circle.margin = c(0.5, 0.5, 0.1, 0.1))
 
     # Open a temporary graphics device
     temp_file <- tempfile(fileext = ".png")
-    png(temp_file, width=2000, height=3000, res=300)
+    png(temp_file, width=3000, height=3000, res=300)
 
     # Draw the chord diagram
     chordDiagramFromDataFrame(
@@ -738,10 +739,11 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
 
     # Clear previous circos plots
     circos.clear()
+    circos.par(circle.margin = c(0.5, 0.5, 0.1, 0.1))
 
     # Open a temporary graphics device
     temp_file_2 <- tempfile(fileext = ".png")
-    png(temp_file_2, width=2000, height=3000, res=300)
+    png(temp_file_2, width=3000, height=3000, res=300)
 
     # Draw the chord diagram
     chordDiagramFromDataFrame(
@@ -825,13 +827,14 @@ ChordDiagramSingleSample <- function(data_path) {
     sorted_chord_df <- sorted_chord_df[,c(5,4,6)]
 
     png(filename,
-        width = 10 * width_height_multiplier,
-        height = 10 * width_height_multiplier,
+        width = 10,
+        height = 10,
         units = "in",
         res = 300)
 
     # Clear any previous circos plots
     circos.clear()
+    circos.par(circle.margin=c(0.5, 0.5, 0.1, 0.1))
 
     # Define a reasonable estimate for the track height
     label_width <- 0.3  # Fixed width, adjust based on visual inspection and need
