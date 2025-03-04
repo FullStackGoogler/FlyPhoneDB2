@@ -9,15 +9,16 @@
 #' @param results_list Results from CalculateInteractions()
 #' @param pct_filter The percentage expression threshold to filter by
 #' @param knowledgebase_version The knowledgebase version used
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
 #'
 #' @return CSV Files
 #'
 #' @keywords internal
-AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version) {
+AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version, base_output_dir) {
   for(name in names(results_list)) {
     interactions_list <- results_list[[name]]
 
-    perc.expr <- read.csv(".temp/Percentage_Expression.csv", check.names = FALSE)
+    perc.expr <- read.csv(paste0(base_output_dir, ".temp/Percentage_Expression.csv"), check.names = FALSE)
 
     filtered_expr <- perc.expr %>%
       filter(perc.expr[[name]] >= pct_filter) %>%
@@ -82,8 +83,8 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version) {
       inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "secretor" = "celltype")) %>%
       inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "receptor" = "celltype"))
 
-    write.csv(score_df_filtered, paste0("output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"), row.names = FALSE)
-    write.csv(score_df, paste0("output/", name, "/interaction-scores/interaction-long_", name, ".csv"), row.names = FALSE)
+    write.csv(score_df_filtered, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"), row.names = FALSE)
+    write.csv(score_df, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long_", name, ".csv"), row.names = FALSE)
 
     print(paste0("AnalyzeSingle() results for: ", name, " saved!"))
   }

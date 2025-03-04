@@ -7,16 +7,27 @@
 #' @param pct_filter Percentage threshold to filter generated Percentage_Expression.csv file for relevant genes
 #' @param control_name The name of the control sample, if applicable.
 #' @param mutant_name The name of the mutant sample, if applicable.
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
 #'
 #' @return Excel File
 #'
 #' @keywords internal
-AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, mutant_name) {
+AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, mutant_name, base_output_dir) {
   # TODO: This allows for any amount, tho it seems we only need two (control/mutant).
   long_results <- ConvertToLongTable(results_list)
 
   control_sample <- gsub("[_/, ]", "-", control_name)
   mutant_sample <- gsub("[_/, ]", "-", mutant_name)
+
+  print("Looping")
+  for(name in names(long_results)) {
+    print(name)
+    print(head(long_results[[name]]))
+  }
+
+  print("Read in Names")
+  print(control_sample) #FIXME: Debugging
+  print(mutant_sample) #FIXME: Debugging
 
   control_interactions <- long_results[[control_sample]] %>% rename(score_control = score, pval_control = pval)
   mutant_interactions <- long_results[[mutant_sample]] %>% rename(score_mutant = score, pval_mutant = pval)
@@ -31,7 +42,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   degs <- read.csv(DEF_fn, row.names = 1)
 
   # Remove LR pairs based off % expression of ligand or receptor
-  perc.expr <- read.csv(".temp/Percentage_Expression.csv", check.names = FALSE)
+  perc.expr <- read.csv(paste0(base_output_dir, ".temp/Percentage_Expression.csv"), check.names = FALSE)
 
   ### Filter by % expression ###
 
@@ -178,7 +189,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   writeData(wb, sheet = "Unchanged", unchanged_signaling)
 
   # Save the workbook
-  saveWorkbook(wb, paste0("output/comparison/results.xlsx"), overwrite = TRUE)
+  saveWorkbook(wb, paste0(base_output_dir, "output/comparison/results.xlsx"), overwrite = TRUE)
 
   print("AnalyzeMultiple() results saved!")
 

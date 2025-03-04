@@ -1,4 +1,4 @@
-GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, pathwayObj, delimitor, seuratObject) {
+GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir) {
   if(doMultivis) {
     doMultiVisualization(DEG_fn, pathwayObj)
   } else {
@@ -6,7 +6,7 @@ GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, p
   }
 }
 
-doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject) {
+doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject, base_output_dir) {
   counts <- NULL
   metadata <- NULL
 
@@ -56,20 +56,20 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     }
   }
 
-  sampleNames <- gsub('^"|"$', '', readLines("sample_names.txt"))
+  sampleNames <- gsub('^"|"$', '', readLines(paste0(base_output_dir, "sample_names.txt")))
 
   if(multiple_samples) { # multi sample without DEG provided
     counts_split <- splitCounts(metadata_split, counts)
 
     for(i in seq_along(counts_split)) {
       #TODO: Can just initialize seuratObj here and pass in to functions that use it
-      HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID)
-      DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID)
+      HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
+      DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
     }
   } else { # single sample
       #TODO: Can just initialize seuratObj here and pass in to functions that use it
-      HeatmapSingleSample(counts, metadata, pathwayObj, sampleNames)
-      DotPlotSingleSample(counts, metadata, pathwayObj, sampleNames)
+      HeatmapSingleSample(counts, metadata, pathwayObj, sampleNames, base_output_dir)
+      DotPlotSingleSample(counts, metadata, pathwayObj, sampleNames, base_output_dir)
   }
 
   filelist <- list()
@@ -79,26 +79,26 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   }
 
   for(curr_file in filelist) {
-    CirclePlotSingleSample(pathwayObj, curr_file)
-    ChordDiagramSingleSample(curr_file)
+    CirclePlotSingleSample(pathwayObj, curr_file, base_output_dir)
+    ChordDiagramSingleSample(curr_file, base_output_dir)
   }
 
-  InteractionStrengthSingleSample(filelist)
+  InteractionStrengthSingleSample(filelist, base_output_dir)
 }
 
-doMultiVisualization <- function(DEG, pathwayObj) {
-  data_path <- "output/comparison/results.xlsx"
+doMultiVisualization <- function(DEG, pathwayObj, base_output_dir) {
+  data_path <- paste0(base_output_dir, "output/comparison/results.xlsx")
 
-  HeatmapMultiSample(DEG, pathwayObj)
-  ChordDiagramMultiSample(data_path, pathwayObj)
-  CirclePlotMultiSample(data_path, pathwayObj)
-  InteractionStrengthMultiSample(data_path)
+  HeatmapMultiSample(DEG, pathwayObj, base_output_dir)
+  ChordDiagramMultiSample(data_path, pathwayObj, base_output_dir)
+  CirclePlotMultiSample(data_path, pathwayObj, base_output_dir)
+  InteractionStrengthMultiSample(data_path, base_output_dir)
 }
 
 # Visualization Functions ------------------------------------------------------
 
-HeatmapMultiSample <- function(DEG_fn, pathwayObj) {
-  output_dir <- paste0("output/comparison/heatmaps/")
+HeatmapMultiSample <- function(DEG_fn, pathwayObj, base_output_dir) {
+  output_dir <- paste0(base_output_dir, "output/comparison/heatmaps/")
 
   DEG <- read.csv(DEG_fn, row.names = 1)
 
@@ -158,11 +158,11 @@ HeatmapMultiSample <- function(DEG_fn, pathwayObj) {
   }
 }
 
-HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
+HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name, base_output_dir) {
   # Format name
   sample_name <- gsub("[_/, ]", "-", sample_name)
 
-  output_dirPath <- paste0("output/", sample_name, "/heatmaps")
+  output_dirPath <- paste0(base_output_dir, "output/", sample_name, "/heatmaps")
 
   seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
   seuratObj <- NormalizeData(seuratObj)
@@ -221,8 +221,8 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
   }
 }
 
-DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
-  output_dir <- paste0("output/", gsub("[_/, ]", "-", sample_name), "/dotplots/")
+DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name, base_output_dir) {
+  output_dir <- paste0(base_output_dir, "output/", gsub("[_/, ]", "-", sample_name), "/dotplots/")
   Condition <- gsub("[_/, ]", "-", sample_name)
 
   seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
@@ -267,8 +267,8 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
   }
 }
 
-CirclePlotMultiSample <- function(data_path, pathwayObj) {
-  output_dir <- "output/comparison/circleplots/"
+CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
+  output_dir <- paste0(base_output_dir, "output/comparison/circleplots/")
 
   pathways <- unique(pathwayObj$pathway)
   pathways <-  gsub("/", "_", pathways) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
@@ -429,7 +429,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
   }
 }
 
-CirclePlotSingleSample <- function(pathwayObj, data_path) {
+CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
   #output_dirPath <- "output/visualizations/circleplots"
 
   pathways <- unique(pathwayObj$pathway)
@@ -445,7 +445,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
   name_extension <- paste0(sample_name, "_")
 
   # Check if using specific or non-specific LR interactions between clusters
-  output_dir <- paste0("output/", sample_name, "/circleplots/")
+  output_dir <- paste0(base_output_dir, "output/", sample_name, "/circleplots/")
 
   # Print cell types to std out, assign color to each cell type
   paste0(unique(append(interaction_list$secretor, interaction_list$receptor)))
@@ -605,8 +605,8 @@ CirclePlotSingleSample <- function(pathwayObj, data_path) {
   }
 }
 
-ChordDiagramMultiSample <- function(data_path, pathwayObj) {
-  output_dir <- paste0("output/comparison/chord-diagrams/")
+ChordDiagramMultiSample <- function(data_path, pathwayObj, base_output_dir) {
+  output_dir <- paste0(base_output_dir, "output/comparison/chord-diagrams/")
 
   df1 <- read_excel(data_path, sheet = 1)
   df2 <- read_excel(data_path, sheet = 2)
@@ -772,7 +772,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj) {
   }
 }
 
-ChordDiagramSingleSample <- function(data_path) {
+ChordDiagramSingleSample <- function(data_path, base_output_dir) {
   interaction_list <- read.csv(data_path)
   filtered = grepl("filtered", data_path)
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
@@ -808,7 +808,7 @@ ChordDiagramSingleSample <- function(data_path) {
 
   for(celltype in celltypes) {
     print(paste0("Making diagram for celltype: ", celltype))
-    filename <- paste0("output/", sample_name, "/chord-diagrams/", name_extension, gsub("[_/, ]", "-", celltype), "_chord-diagram.png")
+    filename <- paste0(base_output_dir, "output/", sample_name, "/chord-diagrams/", name_extension, gsub("[_/, ]", "-", celltype), "_chord-diagram.png")
 
     # Process only celltype of interest
     interaction_list_cell  <- interaction_list %>% filter(secretor == celltype & receptor != celltype)
@@ -860,8 +860,8 @@ ChordDiagramSingleSample <- function(data_path) {
   }
 }
 
-InteractionStrengthMultiSample <- function(data_path) {
-  output_dir <- "output/comparison/"
+InteractionStrengthMultiSample <- function(data_path, base_output_dir) {
+  output_dir <- paste0(base_output_dir, "output/comparison/")
 
   df1 <- read_excel(data_path, sheet = 1)
   df2 <- read_excel(data_path, sheet = 2)
@@ -955,7 +955,7 @@ InteractionStrengthMultiSample <- function(data_path) {
   ggsave(paste0(output_dir, "Interaction_Strength_DEG_filtered.png"), combined_plot, width = 12, height = 10, dpi = 300)
 }
 
-InteractionStrengthSingleSample <- function(fileList) {
+InteractionStrengthSingleSample <- function(fileList, base_output_dir) {
   all_outgoing_scores_list <- list()
   all_incoming_scores_list <- list()
 
@@ -1019,7 +1019,7 @@ InteractionStrengthSingleSample <- function(fileList) {
 
     print(p)
 
-    output_filename <- paste0("output/", sample_name, "/", sample_name, "_interaction-strength.png")
+    output_filename <- paste0(base_output_dir, "output/", sample_name, "/", sample_name, "_interaction-strength.png")
     ggsave(output_filename, plot = p, width = 12, height = 10, dpi = 300)
   }
 }

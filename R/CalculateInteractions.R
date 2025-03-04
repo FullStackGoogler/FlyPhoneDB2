@@ -11,14 +11,15 @@
 #' @param knowledgebase_version The chosen knowledgebase version
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
 #' @param seuratObject Counts/Metadata stored in a Seurat Object.
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
 #'
 #' @return NULL
 #'
 #' @keywords internal
-CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor, seuratObject) {
+CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor, seuratObject, base_output_dir) {
   # Loading Data ---------------------------------------------------------------
 
-  output_dir <- "output"
+  output_dir <- paste0(base_output_dir, "output")
   output_base_filename <- "FlyPhone_interactions_raw_"
 
   # Whether or not we analyse more than one dataset
@@ -136,7 +137,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     select(Gene, everything()) %>%
     relocate(celltype, .after = last_col())
 
-  write.csv(pctexpr_final, ".temp/Percentage_Expression.csv", row.names = FALSE)
+  write.csv(pctexpr_final, paste0(base_output_dir, ".temp/Percentage_Expression.csv"), row.names = FALSE)
 
   print("Percentage Expression saved to \".temp/Percentage_Expression.csv\"")
 
@@ -390,7 +391,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
   # Save sample names for future functions
   formattedNames <- (sapply(results_names, function(x) gsub("[_/, ]", "-", x)))
-  write.table(formattedNames, "sample_names.txt", row.names = FALSE, col.names = FALSE, sep = "\n")
+  write.table(formattedNames, paste0(base_output_dir, "sample_names.txt"), row.names = FALSE, col.names = FALSE, sep = "\n")
 
   # Add names onto results and return
   results <- setNames(results, formattedNames)
