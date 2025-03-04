@@ -1,53 +1,3 @@
-#' Converts the results from CalculateInteractions() into long table format
-#'
-#' @param results The list returned by CalculateInteractions()
-#'
-#' @return list of results in long table format
-#'
-#' @noRd
-ConvertToLongTable <- function(results) {
-  long_table_list <- NULL
-  long_table_names <- names(results)
-
-  for(result in results) {
-    colnames(result)[c(4,7,8)] <- c("Gene_secreted","Gene_receptor","pathway_receptor")
-
-    # Get p values and scores for long-table format
-    pvalues <- colnames(result)[grepl("_pvalues", colnames(result))]
-    scores <- colnames(result)[grepl("_score", colnames(result))]
-
-    # Format the pvalues and scores for each interaction
-    interaction_pvalues <- result[ , c("Gene_secreted", "Gene_receptor", "pathway_receptor", pvalues)]
-    interaction_scores <- result[ , c("Gene_secreted", "Gene_receptor", "pathway_receptor", scores)]
-
-    # pivot data from wide to long
-    df_long <- result %>%
-      tidyr::pivot_longer(-c(1:22), names_to = "cell_type_pair", values_to = "value")
-    df_long$cell_type_pair <- gsub("^X", "", df_long$cell_type_pair) # remove X from beginning of cluster column names
-
-    df_long$cell_type_pair <- gsub(".", ">", df_long$cell_type_pair, fixed = TRUE) # cell type A > cell type B : cell type sending signal > (to) receiver
-    df_long <- tidyr::separate(df_long, cell_type_pair, sep= ">", into = c("secretor", "receptor"))
-
-    # remove p-value row and add back later
-    p_value_df <- df_long %>%
-      filter(grepl("pvalue", df_long$receptor))
-    score_df <- df_long %>%
-      filter(! grepl("pvalue", df_long$receptor))
-
-    # Format long data table
-    colnames(score_df)[ncol(score_df)] <- "score"
-    colnames(p_value_df)[ncol(p_value_df)] <- "p_val"
-    score_df$pval <- p_value_df$p_val
-    score_df$receptor <- gsub("_score", "", score_df$receptor)
-
-    long_table_list[[length(long_table_list)+1]] <- score_df
-  }
-
-  long_table_list <- setNames(long_table_list, long_table_names)
-
-  return(long_table_list)
-}
-
 #' Analysis for multiple samples
 #'
 #' Analyzes calculated interaction scores for multiple samples by filtering by both percentage expression and the DEG file
@@ -241,4 +191,54 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   list_test <- setNames(list_test, c("significant_signaling_both_conditions", paste0("significant_signaling_in_", mutant_sample), paste0("significant_signaling_in_", control_sample), "unchanged_signaling"))
 
   return(list_test)
+}
+
+#' Converts the results from CalculateInteractions() into long table format
+#'
+#' @param results The list returned by CalculateInteractions()
+#'
+#' @return list of results in long table format
+#'
+#' @noRd
+ConvertToLongTable <- function(results) {
+  long_table_list <- NULL
+  long_table_names <- names(results)
+
+  for(result in results) {
+    colnames(result)[c(4,7,8)] <- c("Gene_secreted","Gene_receptor","pathway_receptor")
+
+    # Get p values and scores for long-table format
+    pvalues <- colnames(result)[grepl("_pvalues", colnames(result))]
+    scores <- colnames(result)[grepl("_score", colnames(result))]
+
+    # Format the pvalues and scores for each interaction
+    interaction_pvalues <- result[ , c("Gene_secreted", "Gene_receptor", "pathway_receptor", pvalues)]
+    interaction_scores <- result[ , c("Gene_secreted", "Gene_receptor", "pathway_receptor", scores)]
+
+    # pivot data from wide to long
+    df_long <- result %>%
+      tidyr::pivot_longer(-c(1:22), names_to = "cell_type_pair", values_to = "value")
+    df_long$cell_type_pair <- gsub("^X", "", df_long$cell_type_pair) # remove X from beginning of cluster column names
+
+    df_long$cell_type_pair <- gsub(".", ">", df_long$cell_type_pair, fixed = TRUE) # cell type A > cell type B : cell type sending signal > (to) receiver
+    df_long <- tidyr::separate(df_long, cell_type_pair, sep= ">", into = c("secretor", "receptor"))
+
+    # remove p-value row and add back later
+    p_value_df <- df_long %>%
+      filter(grepl("pvalue", df_long$receptor))
+    score_df <- df_long %>%
+      filter(! grepl("pvalue", df_long$receptor))
+
+    # Format long data table
+    colnames(score_df)[ncol(score_df)] <- "score"
+    colnames(p_value_df)[ncol(p_value_df)] <- "p_val"
+    score_df$pval <- p_value_df$p_val
+    score_df$receptor <- gsub("_score", "", score_df$receptor)
+
+    long_table_list[[length(long_table_list)+1]] <- score_df
+  }
+
+  long_table_list <- setNames(long_table_list, long_table_names)
+
+  return(long_table_list)
 }
