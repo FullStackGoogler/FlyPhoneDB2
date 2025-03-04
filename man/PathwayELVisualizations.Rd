@@ -4,7 +4,10 @@
 \alias{PathwayELVisualizations}
 \title{Pathway Expression Level Visualization Generator}
 \usage{
-PathwayELVisualizations()
+PathwayELVisualizations(base_output_dir)
+}
+\arguments{
+\item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 }
 \description{
 Generates visualizations for Pathway expression levels in each given sample

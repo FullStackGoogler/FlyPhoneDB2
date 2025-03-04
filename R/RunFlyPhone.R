@@ -9,6 +9,7 @@
 #' @param knowledgebase_version Version of knowledgebase to use. Valid values are: "Version 1", "Version 2 All", "Version 2 High", and "Version 2 High/Moderate".
 #' @param perm_times The number of times to shuffle cluster alignments and calculate ligand/receptor averages for p-value calculation in raw interaction scoring. Default value of 1000.
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
+#' @param seuratObject Optionally can upload a Seurat Object instead of a matrix/metadata file pair.
 #' @param control_name The name of the control sample, if applicable.
 #' @param mutant_name The name of the mutant sample, if applicable.
 #' @param deletePE Whether or not to delete the percentage expression file after the pipeline is finished. Defaults to true.
@@ -92,7 +93,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   } else if (isMultiSample & !DEG_exists) {
     write.table("Multi", outputType_filepath, row.names = FALSE, col.names = FALSE)
   } else {
-    write.table("Single", outputType_filepath), row.names = FALSE, col.names = FALSE)
+    write.table("Single", outputType_filepath, row.names = FALSE, col.names = FALSE)
   }
 }
 

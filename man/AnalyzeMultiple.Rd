@@ -4,7 +4,14 @@
 \alias{AnalyzeMultiple}
 \title{Analysis for multiple samples}
 \usage{
-AnalyzeMultiple(results_list, DEF_fn, pct_filter, control_name, mutant_name)
+AnalyzeMultiple(
+  results_list,
+  DEF_fn,
+  pct_filter,
+  control_name,
+  mutant_name,
+  base_output_dir
+)
 }
 \arguments{
 \item{results_list}{Results from CalculateInteractions()}
@@ -14,6 +21,8 @@ AnalyzeMultiple(results_list, DEF_fn, pct_filter, control_name, mutant_name)
 \item{control_name}{The name of the control sample, if applicable.}
 
 \item{mutant_name}{The name of the mutant sample, if applicable.}
+
+\item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 
 \item{DEG_fn}{Differentially expressed genes file path}
 }

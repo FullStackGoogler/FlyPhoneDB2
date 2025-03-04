@@ -15,7 +15,8 @@ RunFlyPhone(
   seuratObject = NULL,
   control_name = NULL,
   mutant_name = NULL,
-  deletePE = TRUE
+  deletePE = TRUE,
+  base_output_dir = ""
 )
 }
 \arguments{
@@ -33,11 +34,15 @@ RunFlyPhone(
 
 \item{delimitor}{The separator for the counts file if it is a .txt file. Default is tab.}
 
+\item{seuratObject}{Optionally can upload a Seurat Object instead of a matrix/metadata file pair.}
+
 \item{control_name}{The name of the control sample, if applicable.}
 
 \item{mutant_name}{The name of the mutant sample, if applicable.}
 
 \item{deletePE}{Whether or not to delete the percentage expression file after the pipeline is finished. Defaults to true.}
+
+\item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 }
 \description{
 Wrapper function for the FlyPhone pipeline.

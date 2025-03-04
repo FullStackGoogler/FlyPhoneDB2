@@ -12,7 +12,8 @@ CalculateInteractions(
   perm_times,
   knowledgebase_version,
   delimitor,
-  seuratObject
+  seuratObject,
+  base_output_dir
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ CalculateInteractions(
 \item{delimitor}{The separator for the counts file if it is a .txt file. Default is tab.}
 
 \item{seuratObject}{Counts/Metadata stored in a Seurat Object.}
+
+\item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 }
 \description{
 Reads in user inputted counts/metadata file pairing and calculates

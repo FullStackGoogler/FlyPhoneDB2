@@ -4,7 +4,7 @@
 \alias{AnalyzeSingle}
 \title{Analysis for single samples or multiple samples without a DEG file provided}
 \usage{
-AnalyzeSingle(results_list, pct_filter, knowledgebase_version)
+AnalyzeSingle(results_list, pct_filter, knowledgebase_version, base_output_dir)
 }
 \arguments{
 \item{results_list}{Results from CalculateInteractions()}
@@ -12,6 +12,8 @@ AnalyzeSingle(results_list, pct_filter, knowledgebase_version)
 \item{pct_filter}{The percentage expression threshold to filter by}
 
 \item{knowledgebase_version}{The knowledgebase version used}
+
+\item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 }
 \value{
 CSV Files
