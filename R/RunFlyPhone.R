@@ -72,7 +72,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   doMultivis <- isMultiSample && DEG_exists
 
   # Generate cell-cell communication visualizations
-  GenerateVisualizations(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor, seuratObject)
+  GenerateVisualizations(counts_fn, metadata_fn, DEG, doMultivis, pathwayObj, delimitor, seuratObject)
 
   # Generate pathway summary visualizations
   PathwayELVisualizations()

@@ -1,6 +1,6 @@
-GenerateVisualizations <- function(counts_fn, metadata_fn, doMultivis, pathwayObj, delimitor, seuratObject) {
+GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, pathwayObj, delimitor, seuratObject) {
   if(doMultivis) {
-    doMultiVisualization(pathwayObj)
+    doMultiVisualization(DEG_fn, pathwayObj)
   } else {
     doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject)
   }
@@ -86,15 +86,77 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   InteractionStrengthSingleSample(filelist)
 }
 
-doMultiVisualization <- function(pathwayObj) {
+doMultiVisualization <- function(DEG, pathwayObj) {
   data_path <- "output/comparison/results.xlsx"
 
+  HeatmapMultiSample(DEG, pathwayObj)
   ChordDiagramMultiSample(data_path, pathwayObj)
   CirclePlotMultiSample(data_path, pathwayObj)
   InteractionStrengthMultiSample(data_path)
 }
 
 # Visualization Functions ------------------------------------------------------
+
+HeatmapMultiSample <- function(DEG_fn, pathwayObj) {
+  output_dir <- paste0("output/comparison/heatmaps/")
+
+  DEG <- read.csv(DEG_fn, row.names = 1)
+
+  # Reshape data: Spread 'cell_type' into columns with 'avg_log2FC' as values
+  heatmap_data <- DEG %>%
+    select(gene, cell_type, avg_log2FC) %>%
+    spread(key = cell_type, value = avg_log2FC)
+
+  # Convert to matrix, with genes as rownames
+  rownames(heatmap_data) <- heatmap_data$gene
+  heatmap_data$gene <- NULL  # Remove gene column after setting as rownames
+  heatmap_matrix <- as.matrix(heatmap_data)
+
+  # Define the color palette mapping
+  palette_length <- 50  # Number of colors in the palette
+  my_breaks <- seq(-3, 3, length.out = palette_length + 1)  # Breaks from -4 to 4
+
+  # Create a color palette
+  my_colors <- colorRampPalette(c("blue", "white", "red"))(palette_length)
+
+  for (signaling_path in unique(pathwayObj$pathway)){
+    signaling_subset <- pathwayObj %>% filter(pathway == signaling_path) %>% select(2,4)
+    signaling_subset$role <- as.factor(signaling_subset$role)
+    signaling_subset$role <- factor(signaling_subset$role, levels = c("ligand", "receptor", "reporter", "TF", "other"))
+    signaling_subset <- signaling_subset %>% arrange(role)
+    heatmap_matrix_subset <- heatmap_data %>% filter(rownames(heatmap_data) %in% unique(signaling_subset$gene))
+    heatmap_matrix_subset$gene <- rownames(heatmap_matrix_subset)
+    heatmap_matrix_subset <- as.matrix(heatmap_matrix_subset)
+    heatmap_matrix_subset[is.na(heatmap_matrix_subset)] <- 0
+    df <- as.data.frame(as.table(heatmap_matrix_subset))
+    colnames(df) <- c("gene", "cell_type", "expression")
+    df$expression <- as.numeric(as.character(df$expression))
+    merged_df <- df %>%
+      left_join(signaling_subset, by = "gene") %>% filter(! cell_type == "gene")
+
+    # Plotting the heatmap with ggplot2
+    p <- ggplot(merged_df, aes(x = cell_type, y = gene, fill = expression)) +
+      geom_tile(color = "white") +
+      scale_fill_gradient2(
+        low = "blue", mid = "white", high = "red", midpoint = 0, na.value = "grey50"
+      ) +
+      #theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        panel.spacing.y = unit(2, "lines"),  # Increase space between panels
+        strip.placement = "outside",  # Moves strip labels outside of panel
+        strip.text.y.left = element_text(angle = 0), # Role label on the right
+        strip.text.y.right = element_text(size = 10, face = "bold"),
+        strip.background = element_rect(fill = "lightgrey", color = NA)
+      ) +
+      labs(title = signaling_path, x = "Cell Type", y = "Gene", fill = "Log2FC") +
+      facet_grid(rows = vars(role), scales = "free_y", space = "free_y", switch = "y")
+
+    ggsave(p, file = paste0(output_dir, gsub("[_/, ]", "-", signaling_path), ".png"),
+           width = 12, # The width of the plot in inches
+           height = 8)
+  }
+}
 
 HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
   # Format name
@@ -160,48 +222,48 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
 }
 
 DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name) {
-  # Format name
-  sample_name <- gsub("[_/, ]", "-", sample_name)
-
-  output_dirPath <- paste0("output/", sample_name, "/dotplots")
+  output_dir <- paste0("output/", gsub("[_/, ]", "-", sample_name), "/dotplots/")
+  Condition <- gsub("[_/, ]", "-", sample_name)
 
   seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
-  Idents(seuratObj) <- "celltype"
   seuratObj <- NormalizeData(seuratObj)
-  seuratObj <- ScaleData(seuratObj)
 
   # Set colors of clusters
-  color_palette <- NULL
+  ncelltype <- length(unique(seuratObj$celltype))
+  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = (ncelltype+2), palette = "polychrome")
+  polychrome_pal <- polychrome_pal[3:(ncelltype+2)]
+  names(polychrome_pal) = sort((unique(seuratObj$celltype)))
 
-  celltype_count <- length(sort(unique(seuratObj$celltype)))
-
-  if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
-    color_palette <- color_palette[3:36]
-  } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
-  }
-  names(color_palette) = sort(unique(seuratObj$celltype))
-
-  Pathway_core_components <- pathwayObj
-  Pathway_core_components$pathway <- gsub("/", "_", Pathway_core_components$pathway) #TODO: TEMP FIX; modify .rda objects to ensure names won't cause problems like "JAK/STAT" trying to make a directory
-
-  for(i in unique(Pathway_core_components$pathway) ){
-    cat("\n")
-    cat("## ", i, " {.tabset} \n")
-    df <- subset(Pathway_core_components, pathway == i)
-    genes <- unique(df$gene) #TODO: Added this, ie. pathway_core_components_v2, aos exists twice in EGFT pathway, as ligand and reporter
-    cat("\n")
-    p <- scCustomize::DotPlot_scCustom(seuratObj, features = genes, x_lab_rotate = TRUE) +
-      ggtitle("Control") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-      patchwork::plot_annotation(title = paste0(i), theme = theme(plot.title = element_text(hjust = 0.5)))
-    print(p)
-    cat("\n")
-    name_extension <- if(!identical("", sample_name)) paste0("_", gsub("[_/, ]", "-", sample_name)) else ""
-    ggsave(p, file = paste0(output_dirPath, "/", gsub(" ", "-", i), name_extension, ".png"),   # The directory you want to save the file in
-           width = 20, # The width of the plot in inches
-           height = 12)
+  for (signaling_path in unique(pathwayObj$pathway)){
+    signaling_subset <- pathwayObj %>% filter(pathway == signaling_path) %>% select(2,4)
+    signaling_subset$role <- as.factor(signaling_subset$role)
+    signaling_subset$role <- factor(signaling_subset$role, levels = c("ligand", "receptor", "reporter", "TF", "other"))
+    signaling_subset <- signaling_subset %>% arrange(role)
+    a <- DotPlot(seuratObj, features = unique(signaling_subset$gene), group.by = "celltype")[['data']]
+    a <- a %>% tibble::remove_rownames() %>% rename(gene = features.plot)
+    a <- a %>% full_join(signaling_subset)
+    a <- a %>% select(id, gene, role, avg.exp.scaled, pct.exp)
+    a <- na.omit(a)
+    # Create a dot plot
+    ggplot(a, aes(x = id, y = gene)) +
+      geom_point(aes(size = pct.exp, color = avg.exp.scaled)) +
+      scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+      facet_grid(rows = vars(role), scales = "free_y", space = "free_y") +
+      theme_minimal() +
+      labs(color = "Average Expression\n(Scaled)", size = "Percent Expressed") +
+      xlab("Celltype") + ylab("Gene") + ggtitle(paste0(Condition, " - ", signaling_path)) +
+      theme(plot.title = element_text(hjust = 0.5),
+            strip.text.y = element_text(angle = 0, size = 10, face = "bold"),
+            axis.text.x = element_text(angle = 45, hjust = 1),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_line(color = "black"),
+            axis.ticks = element_line(color = "black")
+      ) + ggpubr::labs_pubr()
+    ggsave(paste0(output_dir, gsub("[_/, ]", "-", signaling_path), ".png"),
+           width = 12,
+           height = 12,
+           dpi = 300)
   }
 }
 
@@ -338,7 +400,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj) {
       E(g)$label.color <- 'black'
 
       # Plot setup and save
-      png(file = paste0(output_dir, celltype, "_", gsub(" ", "_", pathway), ".png"),
+      png(file = paste0(output_dir, gsub("[_/, ]", "-", celltype), "_", gsub("[_/, ]", "-", pathway), ".png"),
           width = 10,
           height = 10,
           units = "in",
