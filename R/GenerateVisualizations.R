@@ -913,7 +913,14 @@ InteractionStrengthMultiSample <- function(data_path) {
 
   # Define custom color palette
   n_colors <- max(length(unique(scores_control$cell_type)), length(unique(scores_mutant$cell_type)))
-  palette_colors <- scales::hue_pal()(n_colors)
+  palette_colors <- NULL
+
+  if(n_colors < 35) { # Use polychrome palette; up to 34 colors
+    palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
+    palette_colors <- palette_colors[3:36]
+  } else { # Too many celltypes, use varibow instead
+    palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+  }
 
   # Plot for control
   a1 <- ggplot(scores_control, aes(x = incoming_score, y = outgoing_score)) +
