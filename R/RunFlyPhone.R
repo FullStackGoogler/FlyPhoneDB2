@@ -23,10 +23,10 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
 
   # Boolean for checking if a DEG file is provided
   DEG_exists <- !is.null(DEG) && file.exists(DEG)
-#
-#   # Load in annotation and pathway core component data depending on the knowledgebase version chosen
-#   annotationObj <- getAnnotationFile(knowledgebase_version)
-#   pathwayObj <- getPathwayFile(knowledgebase_version)
+
+  # Load in annotation and pathway core component data depending on the knowledgebase version chosen
+  annotationObj <- getAnnotationFile(knowledgebase_version)
+  pathwayObj <- getPathwayFile(knowledgebase_version)
 #
 #   # Initial subfolder creation
 #   dir.create(paste0(base_output_dir, "output"))
@@ -71,33 +71,34 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
 #     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
 #     AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
 #   }
-#
-#   doMultivis <- isMultiSample && DEG_exists
-#
-#   # Generate cell-cell communication visualizations
-#   GenerateVisualizations(counts_fn, metadata_fn, DEG, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
-#
-#   # Generate pathway summary visualizations
-#   print("Generating pathway visualizations...")
-#   PathwayELVisualizations(base_output_dir)
-#
-#   # Remove the percentage expression file from the final output
-#   if(deletePE) {
-#     print("Deleting Percentage_Expression.csv...")
-#     file.remove(paste0(base_output_dir, ".temp/Percentage_Expression.csv"))
-#   }
   isMultiSample <- TRUE
-  print("Generating output_type.txt...")
-  outputType_filepath <- paste0(base_output_dir, "output_type.txt")
 
-  # Create a textfile specifying the type of analysis done
-  if(isMultiSample & DEG_exists) {
-    write.table("Multi_DEG", outputType_filepath, row.names = FALSE, col.names = FALSE)
-  } else if (isMultiSample & !DEG_exists) {
-    write.table("Multi", outputType_filepath, row.names = FALSE, col.names = FALSE)
-  } else {
-    write.table("Single", outputType_filepath, row.names = FALSE, col.names = FALSE)
-  }
+  doMultivis <- isMultiSample && DEG_exists
+
+  # Generate cell-cell communication visualizations
+  GenerateVisualizations(counts_fn, metadata_fn, DEG, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
+
+  # # Generate pathway summary visualizations
+  # print("Generating pathway visualizations...")
+  # PathwayELVisualizations(base_output_dir)
+  #
+  # # Remove the percentage expression file from the final output
+  # if(deletePE) {
+  #   print("Deleting Percentage_Expression.csv...")
+  #   file.remove(paste0(base_output_dir, ".temp/Percentage_Expression.csv"))
+  # }
+  #
+  # print("Generating output_type.txt...")
+  # outputType_filepath <- paste0(base_output_dir, "output_type.txt")
+  #
+  # # Create a textfile specifying the type of analysis done
+  # if(isMultiSample & DEG_exists) {
+  #   write.table("Multi_DEG", outputType_filepath, row.names = FALSE, col.names = FALSE)
+  # } else if (isMultiSample & !DEG_exists) {
+  #   write.table("Multi", outputType_filepath, row.names = FALSE, col.names = FALSE)
+  # } else {
+  #   write.table("Single", outputType_filepath, row.names = FALSE, col.names = FALSE)
+  # }
 }
 
 # Helper Functions -------------------------------------------------------------

@@ -89,13 +89,13 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
 
 doMultiVisualization <- function(DEG, pathwayObj, base_output_dir) {
   data_path <- paste0(base_output_dir, "output/comparison/results.xlsx")
-
-  print("Generating heatmaps...")
-  HeatmapMultiSample(DEG, pathwayObj, base_output_dir)
-  print("Generating chord diagrams...")
-  ChordDiagramMultiSample(data_path, pathwayObj, base_output_dir)
-  print("Generating circle plots...")
-  CirclePlotMultiSample(data_path, pathwayObj, base_output_dir)
+#
+#   print("Generating heatmaps...")
+#   HeatmapMultiSample(DEG, pathwayObj, base_output_dir)
+#   print("Generating chord diagrams...")
+#   ChordDiagramMultiSample(data_path, pathwayObj, base_output_dir)
+#   print("Generating circle plots...")
+#   CirclePlotMultiSample(data_path, pathwayObj, base_output_dir)
   print("Generating interaction strengths...")
   InteractionStrengthMultiSample(data_path, base_output_dir)
 }
