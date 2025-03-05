@@ -12,11 +12,16 @@
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
 #' @param seuratObject Counts/Metadata stored in a Seurat Object.
 #' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
+#' @param multi Whether or not to use parallelization, if applicable on your machine.
 #'
 #' @return NULL
 #'
 #' @keywords internal
-CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor, seuratObject, base_output_dir) {
+CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_components, perm_times, knowledgebase_version, delimitor, seuratObject, base_output_dir, multi) {
+  if(multi) {
+    plan(multisession)
+  }
+
   # Loading Data ---------------------------------------------------------------
 
   output_dir <- paste0(base_output_dir, "output")
@@ -245,7 +250,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
     # Run the permutation test X times sequentially
     num_permutations <- perm_times #TODO: perm_times = 1 breaks calculation of results later
-    permutation_results <- map(1:num_permutations, ~ calculate_permuted_avg(cellInfo, exprMat, LR_pairs))
+    permutation_results <- future_map(1:num_permutations, ~ calculate_permuted_avg(cellInfo, exprMat, LR_pairs))
 
     # Extract ligand and receptor results into separate dataframes
     ligand_results <- map(permutation_results, "ligand_avg")

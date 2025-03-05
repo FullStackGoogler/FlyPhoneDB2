@@ -27,7 +27,9 @@ Depends:
     readxl,
     grid,
     ggrepel,
-    patchwork
+    patchwork,
+    future,
+    furrr
 LazyData: true
-URL: https://github.com/FullStackGoogler/FlyPhone
-BugReports: https://github.com/FullStackGoogler/FlyPhone/issues
+URL: https://github.com/FullStackGoogler/FlyPhoneDB2
+BugReports: https://github.com/FullStackGoogler/FlyPhoneDB2/issues
