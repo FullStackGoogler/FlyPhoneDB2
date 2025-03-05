@@ -16,7 +16,11 @@
 #' @keywords internal
 AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version, base_output_dir) {
   for(name in names(results_list)) {
+    print(paste0("Analyzing sample: ", name, "..."))
+
     interactions_list <- results_list[[name]]
+
+    print("Reading in percentage expression file...")
 
     perc.expr <- read.csv(paste0(base_output_dir, ".temp/Percentage_Expression.csv"), check.names = FALSE)
 
@@ -74,14 +78,22 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version, base_
     score_df$pval <- p_value_df$p_val
     score_df$receptor <- gsub("_score", "", score_df$receptor)
 
+    print("Filtering by significant p-values...")
+
     # Filter out non-specific between cell type interactions
     score_df_filtered <- score_df %>%
       filter(pval < 0.05)
+
+    print("Done!")
+
+    print("Filtering by significant percentage expression...")
 
     # Only keep genes with significant percentage expression
     score_df_filtered <- score_df_filtered %>%
       inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "secretor" = "celltype")) %>%
       inner_join(filtered_expr, by = c("Gene_secreted" = "Gene", "receptor" = "celltype"))
+
+    print("Done!")
 
     write.csv(score_df_filtered, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"), row.names = FALSE)
     write.csv(score_df, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long_", name, ".csv"), row.names = FALSE)

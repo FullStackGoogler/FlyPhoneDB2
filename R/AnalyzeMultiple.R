@@ -28,15 +28,19 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   mutant_interactions$secretor <- gsub("/", "_", mutant_interactions$secretor)
   mutant_interactions$receptor <- gsub("/", "_", mutant_interactions$receptor)
 
+  print("Reading in DEG file...")
+
   # DEGS #
   degs <- read.csv(DEF_fn, row.names = 1)
 
-  # Remove LR pairs based off % expression of ligand or receptor
+  print("Reading in percentage expression file...")
+
   perc.expr <- read.csv(paste0(base_output_dir, ".temp/Percentage_Expression.csv"), check.names = FALSE)
 
   ### Filter by % expression ###
 
-  # First, filter perc.expr for relevant genes and pct.1 >= 0.1
+  print("Filtering control sample by significant percentage expression...")
+
   filtered_expr <- perc.expr %>%
     filter(perc.expr[[control_sample]] >= pct_filter) %>%
     select(Gene, celltype)
@@ -57,7 +61,8 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
     inner_join(secretor_genes, by = c("Gene_secreted", "secretor")) %>%
     inner_join(receptor_genes, by = c("Gene_receptor", "receptor"))
 
-  # First, filter perc.expr for relevant genes and pct.2 >= 0.1
+  print("Filtering mutant sample by significant percentage expression...")
+
   filtered_expr <- perc.expr %>%
     filter(perc.expr[[mutant_sample]] >= pct_filter) %>%
     select(Gene, celltype)
@@ -92,6 +97,8 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
                                    .default = pval_mutant))
 
   ###
+
+  print("Filtering by DEG file...")
 
   # check which direction DEG
   interactions_two_conditions$secreted_gene_deg_status <- NA
@@ -159,6 +166,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   significant_signaling_in_Control <- interactions_two_conditions %>% filter(specificity == paste0("significant_signaling_in_", control_sample))
   unchanged_signaling <- interactions_two_conditions %>% filter(specificity == "unchanged_signaling")
 
+  print("Saving AnalyzeMultiple() results...")
 
   sheet_name <- NULL
 
@@ -183,15 +191,13 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
 
   print("AnalyzeMultiple() results saved!")
 
-  list_test <- NULL
-  list_test[[length(list_test)+1]] <- significant_signaling_both_conditions
-  list_test[[length(list_test)+1]] <- significant_signaling_in_Mutant
-  list_test[[length(list_test)+1]] <- significant_signaling_in_Control
-  list_test[[length(list_test)+1]] <- unchanged_signaling
-
-  list_test <- setNames(list_test, c("significant_signaling_both_conditions", paste0("significant_signaling_in_", mutant_sample), paste0("significant_signaling_in_", control_sample), "unchanged_signaling"))
-
-  return(list_test)
+  # list_test <- NULL
+  # list_test[[length(list_test)+1]] <- significant_signaling_both_conditions
+  # list_test[[length(list_test)+1]] <- significant_signaling_in_Mutant
+  # list_test[[length(list_test)+1]] <- significant_signaling_in_Control
+  # list_test[[length(list_test)+1]] <- unchanged_signaling
+  #
+  # list_test <- setNames(list_test, c("significant_signaling_both_conditions", paste0("significant_signaling_in_", mutant_sample), paste0("significant_signaling_in_", control_sample), "unchanged_signaling"))
 }
 
 #' Converts the results from CalculateInteractions() into long table format

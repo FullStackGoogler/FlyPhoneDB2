@@ -31,8 +31,6 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
       metadata_split <- split(metadata, metadata$LibraryID)
     }
   } else {
-    print("Reading in metadata...")
-
     metadata <- read.csv(metadata_fn) %>%
       rename("celltype" = cluster)
 
@@ -41,8 +39,6 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
       multiple_samples <- TRUE
       metadata_split <- split(metadata, metadata$LibraryID)
     }
-
-    print("Reading in counts...")
 
     # Read in Counts
     file_type = tools::file_ext(counts_fn)
@@ -62,13 +58,15 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     counts_split <- splitCounts(metadata_split, counts)
 
     for(i in seq_along(counts_split)) {
-      #TODO: Can just initialize seuratObj here and pass in to functions that use it
+      print("Generating heatmaps...")
       HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
+      print("Generaeting dotplots...")
       DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
     }
   } else { # single sample
-      #TODO: Can just initialize seuratObj here and pass in to functions that use it
+      print("Generating heatmaps...")
       HeatmapSingleSample(counts, metadata, pathwayObj, sampleNames, base_output_dir)
+      print("Generating dotplots...")
       DotPlotSingleSample(counts, metadata, pathwayObj, sampleNames, base_output_dir)
   }
 
@@ -79,19 +77,26 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   }
 
   for(curr_file in filelist) {
+    print("Generating circle plots...")
     CirclePlotSingleSample(pathwayObj, curr_file, base_output_dir)
+    print("Generating chord diagrams...")
     ChordDiagramSingleSample(curr_file, base_output_dir)
   }
 
+  print("Generating interaction strengths...")
   InteractionStrengthSingleSample(filelist, base_output_dir)
 }
 
 doMultiVisualization <- function(DEG, pathwayObj, base_output_dir) {
   data_path <- paste0(base_output_dir, "output/comparison/results.xlsx")
 
+  print("Generating heatmaps...")
   HeatmapMultiSample(DEG, pathwayObj, base_output_dir)
+  print("Generating chord diagrams...")
   ChordDiagramMultiSample(data_path, pathwayObj, base_output_dir)
+  print("Generating circle plots...")
   CirclePlotMultiSample(data_path, pathwayObj, base_output_dir)
+  print("Generating interaction strengths...")
   InteractionStrengthMultiSample(data_path, base_output_dir)
 }
 

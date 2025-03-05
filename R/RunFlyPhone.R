@@ -66,7 +66,7 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
 
   # Only perform multi-sample analysis if a DEG file is provided
   if(isMultiSample & DEG_exists) {
-    list_test <- AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name, base_output_dir) #FIXME: Might not actually use this variable at all
+    AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name, base_output_dir) #FIXME: Might not actually use this variable at all
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
     AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
@@ -78,13 +78,16 @@ RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_fi
   GenerateVisualizations(counts_fn, metadata_fn, DEG, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
 
   # Generate pathway summary visualizations
+  print("Generating pathway visualizations...")
   PathwayELVisualizations(base_output_dir)
 
   # Remove the percentage expression file from the final output
   if(deletePE) {
+    print("Deleting Percentage_Expression.csv...")
     file.remove(paste0(base_output_dir, ".temp/Percentage_Expression.csv"))
   }
 
+  print("Generating output_type.txt...")
   outputType_filepath <- paste0(base_output_dir, "output_type.txt")
 
   # Create a textfile specifying the type of analysis done

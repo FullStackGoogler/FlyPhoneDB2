@@ -139,7 +139,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
   write.csv(pctexpr_final, paste0(base_output_dir, ".temp/Percentage_Expression.csv"), row.names = FALSE)
 
-  print("Percentage Expression saved to \".temp/Percentage_Expression.csv\"")
+  print("Percentage Expression saved to \".temp/Percentage_Expression.csv\"!")
 
   # Interaction Score Calculation ----------------------------------------------
   for(seuratObj in seurat_object_list) {
@@ -392,6 +392,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
   # Save sample names for future functions
   formattedNames <- (sapply(results_names, function(x) gsub("[_/, ]", "-", x)))
   write.table(formattedNames, paste0(base_output_dir, "sample_names.txt"), row.names = FALSE, col.names = FALSE, sep = "\n")
+  print("Saved sample_names.txt!")
 
   # Add names onto results and return
   results <- setNames(results, formattedNames)
