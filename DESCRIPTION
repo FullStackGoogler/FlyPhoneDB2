@@ -27,7 +27,8 @@ Depends:
     readxl,
     grid,
     ggrepel,
-    patchwork
+    patchwork,
+    ggpubr
 LazyData: true
 URL: https://github.com/FullStackGoogler/FlyPhoneDB2
 BugReports: https://github.com/FullStackGoogler/FlyPhoneDB2/issues

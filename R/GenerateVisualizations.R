@@ -927,7 +927,7 @@ InteractionStrengthMultiSample <- function(data_path, base_output_dir) {
     palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     palette_colors <- palette_colors[3:36]
   } else { # Too many celltypes, use varibow instead
-    palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    palette_colors <- scCustomize::DiscretePalette_scCustomize(num_colors = n_colors, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
 
   # Plot for control
