@@ -19,16 +19,6 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   control_sample <- gsub("[_/, ]", "-", control_name)
   mutant_sample <- gsub("[_/, ]", "-", mutant_name)
 
-  print("Looping")
-  for(name in names(long_results)) {
-    print(name)
-    print(head(long_results[[name]]))
-  }
-
-  print("Read in Names")
-  print(control_sample) #FIXME: Debugging
-  print(mutant_sample) #FIXME: Debugging
-
   control_interactions <- long_results[[control_sample]] %>% rename(score_control = score, pval_control = pval)
   mutant_interactions <- long_results[[mutant_sample]] %>% rename(score_mutant = score, pval_mutant = pval)
 

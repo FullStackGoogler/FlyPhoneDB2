@@ -419,7 +419,6 @@ splitCounts <- function(metadata_split, counts) {
 
 # Define a function to shuffle cluster assignments and calculate ligand/receptor averages
 calculate_permuted_avg <- function(cellInfo, exprMat, LR_pairs) {
-  print("Calculating permutated avergages")
   # Shuffle the cluster assignments
   shuffled_cellInfo <- cellInfo
   shuffled_cellInfo$cluster <- sample(shuffled_cellInfo$cluster)
