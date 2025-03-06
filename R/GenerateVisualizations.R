@@ -73,7 +73,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   filelist <- list()
 
   for(name in sampleNames) {
-    filelist <- append(filelist, paste0("output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"))
+    filelist <- append(filelist, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"))
   }
 
   for(curr_file in filelist) {
