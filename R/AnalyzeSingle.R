@@ -50,7 +50,7 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version, base_
         "standard", "interaction", "Source", "Additional_info_GO")
     } else {
       c("Pair_ID", "GeneID_secreted", "FBgn_secreted",
-        "GeneID_receptor", "FBgn_receptor", "Rank", "Version",
+        "GeneID_receptor", "FBgn_receptor", "rank", "Version",
         "Source", "Interaction", "Ligand_annotation", "Ligand_signalP_prediction",
         "Receptor_annotation", "Receptor_TM_prediction", "More_information",
         "Mammalian_ligand-receptor pair?", "Human_ligand_receptor_ pair(s)",
