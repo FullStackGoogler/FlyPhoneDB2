@@ -34,7 +34,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
   results <- NULL
   results_names <- NULL
 
-  if(!is.null(seuratObject)) {
+  if(!is.null(seuratObject) && file.exists(seuratObject)) {
     seuratObj <- readRDS(seuratObject)
 
     metadata <- seuratObj[[]]

@@ -15,7 +15,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
 
   multiple_samples <- FALSE # Whether or not we analyse more than one dataset #TODO: Could pass in from GenerateVis(); some lines may be redundant
 
-  if(!is.null(seuratObject)) {
+  if(!is.null(seuratObject) && file.exists(seuratObject)) {
     seuratObj <- readRDS(seuratObject)
 
     metadata <- seuratObj[[]]
