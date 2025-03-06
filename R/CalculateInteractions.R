@@ -374,6 +374,9 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     dir.create(paste0(output_dir, "/", sampleName))
     dir.create(paste0(output_dir, "/", sampleName, "/interaction-scores"))
 
+    # Remove "X" from start of columns with numbers at the start
+    colnames(all_averages_paths) <- gsub("^X", "", colnames(all_averages_paths))
+
     write.csv(all_averages_paths, paste0(paste0(output_dir, "/", sampleName), "/pathway-expression-levels_", sampleName, ".csv"), row.names = FALSE)
 
     cat("FlyPhone mean expression level file saved to:", paste0(paste0(output_dir, "/", sampleName), "/pathway-expression-levels_", sampleName, ".csv"), "\n")
