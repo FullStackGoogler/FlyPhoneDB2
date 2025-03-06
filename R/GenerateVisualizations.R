@@ -2,7 +2,7 @@ GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, p
   if(doMultivis) {
     doMultiVisualization(DEG_fn, pathwayObj, base_output_dir)
   } else {
-    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject)
+    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject, base_output_dir)
   }
 }
 
