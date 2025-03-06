@@ -48,8 +48,8 @@ PathwayELVisualizations <- function(base_output_dir) {
     curr_file_path <- paste0(base_output_dir, "output/", name, "/pathway-expression-levels_", name, ".csv")
     sample_name <- name
 
-    expressionLevels <- read.csv(curr_file_path)
-    expressionLevels$X <- NULL
+    expressionLevels <- read.csv(curr_file_path, check.names = FALSE)
+    celltype_columns <- setdiff(names(expressionLevels), c('Pathway', 'sample', 'gene', 'gene_type'))
 
     ligandEL <- expressionLevels %>%
       filter(Pathway != "unknown", gene_type == "ligand")
