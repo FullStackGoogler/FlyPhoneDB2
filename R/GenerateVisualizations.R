@@ -254,17 +254,21 @@ DotPlotSingleSample <- function(counts, metadata, pathwayObj, sample_name, base_
       geom_point(aes(size = pct.exp, color = avg.exp.scaled)) +
       scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
       facet_grid(rows = vars(role), scales = "free_y", space = "free_y") +
-      theme_minimal() +
+      #theme_minimal() +
       labs(color = "Average Expression\n(Scaled)", size = "Percent Expressed") +
       xlab("Celltype") + ylab("Gene") + ggtitle(paste0(Condition, " - ", signaling_path)) +
       theme(plot.title = element_text(hjust = 0.5),
             strip.text.y = element_text(angle = 0, size = 10, face = "bold"),
+            strip.placement = "outside",  # Moves strip labels outside of panel
+            strip.text.y.left = element_text(angle = 0), # Role label on the right
+            strip.text.y.right = element_text(size = 10, face = "bold"),
+            strip.background = element_rect(fill = "lightgrey", color = NA),
             axis.text.x = element_text(angle = 45, hjust = 1),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             axis.line = element_line(color = "black"),
             axis.ticks = element_line(color = "black")
-      ) + ggpubr::labs_pubr()
+      )# + ggpubr::labs_pubr()
     ggsave(paste0(output_dir, gsub("[_/, ]", "-", signaling_path), ".png"),
            width = 12,
            height = 12,
