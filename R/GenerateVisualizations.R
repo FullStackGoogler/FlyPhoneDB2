@@ -773,7 +773,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj, base_output_dir) {
     unlink(temp_file_2)  # Remove temporary file
     f2 <- rasterGrob(image_2)
     cowplot::plot_grid(f1, f2, nrow = 1)  # Arrange side by side, left is always control
-    ggsave(filename = paste0(output_dir, gsub("[_/, ]", "-", celltype), "_chord-diagram.png"))
+    ggsave(filename = paste0(output_dir, gsub("[_/, ]", "-", celltype), "_chord-diagram.png"), width = 6000, height = 3000, units = "px", )
   }
 }
 
