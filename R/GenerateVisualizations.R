@@ -1,3 +1,19 @@
+#' Visualization Pipeline
+#'
+#' Uses the inputted data and calculated results to create visualizations.
+#'
+#' @param counts_fn The file path of the gene/cell matrix containing all expression counts
+#' @param metadata_fn The file path of the accompanying metadata file for counts
+#' @param DEG_fn The file path for the differentially expressed genes file
+#' @param doMultivis Whether or not to generate comparison visualizations
+#' @param pathwayObj The core component file as determined by the user inputted knowledgebase version
+#' @param delimitor The separator for the counts file if it is a .txt file
+#' @param seuratObject The file path to the Seurat Object formatted data
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory
+#'
+#' @return NULL
+#'
+#' @keywords internal
 GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir) {
   if(doMultivis) {
     doMultiVisualization(DEG_fn, pathwayObj, base_output_dir)
@@ -6,6 +22,25 @@ GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, p
   }
 }
 
+#' Single Analysis Visualization
+#'
+#' Generates the following visualizations:
+#' - Average Expression Heatmap
+#' - Average Expression Dot Plot
+#' - Interaction Score Circle Plot
+#' - Interaction score Chord Diagram
+#' - Interaction Strength Graph
+#'
+#' @param counts_fn The file path of the gene/cell matrix containing all expression counts
+#' @param metadata_fn The file path of the accompanying metadata file for counts
+#' @param pathwayObj The core component file as determined by the user inputted knowledgebase version
+#' @param delimitor The separator for the counts file if it is a .txt file
+#' @param seuratObject The file path to the Seurat Object formatted data
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory
+#'
+#' @return NULL
+#'
+#' @keywords internal
 doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject, base_output_dir) {
   counts <- NULL
   metadata <- NULL
@@ -87,6 +122,21 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   InteractionStrengthSingleSample(filelist, base_output_dir)
 }
 
+#' Multi Analysis Visualization
+#'
+#' Generates the following visualizations:
+#' - Log2FC Heatmap
+#' - Log2FC Circle Plot
+#' - Interaction score Chord Diagram
+#' - Interaction Strength Graph
+#'
+#' @param DEG_fn The file path for the differentially expressed genes file
+#' @param pathwayObj The core component file as determined by the user inputted knowledgebase version
+#' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory
+#'
+#' @return NULL
+#'
+#' @keywords internal
 doMultiVisualization <- function(DEG, pathwayObj, base_output_dir) {
   data_path <- paste0(base_output_dir, "output/comparison/results.xlsx")
 

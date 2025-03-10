@@ -91,7 +91,7 @@ PathwayELVisualizations <- function(base_output_dir) {
         x = "Celltype",
         y = "Pathway Gene"
       )
-    ggsave(paste0(output_dir, "/", sample_name, "_Ligand_Heatmap.png"), width = 12, height = 8, units = "in")
+    ggsave(paste0(output_dir, "/", sample_name, "_Ligand_Heatmap.png"), width = 12, height = 10, units = "in")
 
     ggplot(receptor_melted, aes(x = celltype, y = Pathway_gene, fill = value)) +
       geom_tile() +
@@ -102,7 +102,7 @@ PathwayELVisualizations <- function(base_output_dir) {
         x = "Celltype",
         y = "Pathway Gene"
       )
-    ggsave(paste0(output_dir, "/", sample_name, "_Receptor_Heatmap.png"), width = 12, height = 8, units = "in")
+    ggsave(paste0(output_dir, "/", sample_name, "_Receptor_Heatmap.png"), width = 12, height = 10, units = "in")
 
     ggplot(reporter_melted, aes(x = celltype, y = Pathway_gene, fill = value)) +
       geom_tile() +
@@ -113,7 +113,7 @@ PathwayELVisualizations <- function(base_output_dir) {
         x = "Celltype",
         y = "Pathway Gene"
       )
-    ggsave(paste0(output_dir, "/", sample_name, "_Reporter_Heatmap.png"), width = 12, height = 8, units = "in")
+    ggsave(paste0(output_dir, "/", sample_name, "_Reporter_Heatmap.png"), width = 12, height = 10, units = "in")
 
     # Dotplot generation:
     reporterEL_filtered <- reporterEL %>%
