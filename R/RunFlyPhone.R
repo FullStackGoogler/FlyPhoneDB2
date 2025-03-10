@@ -2,23 +2,23 @@
 #'
 #' Wrapper function for the FlyPhone pipeline.
 #'
+#' @param knowledgebase_version Version of knowledgebase to use. Valid values are: "Version 1", "Version 2 All", "Version 2 High", and "Version 2 High/Moderate".
 #' @param counts_fn The filepath to the counts matrix.
 #' @param metadata_fn The filepath to the accompanying metadata file.
-#' @param DEG The filepath to the DEG file, if provided.
-#' @param pct_filter Percent threshold to filter expression of genes by. Default value of 0.1.
-#' @param knowledgebase_version Version of knowledgebase to use. Valid values are: "Version 1", "Version 2 All", "Version 2 High", and "Version 2 High/Moderate".
-#' @param perm_times The number of times to shuffle cluster alignments and calculate ligand/receptor averages for p-value calculation in raw interaction scoring. Default value of 1000.
 #' @param delimitor The separator for the counts file if it is a .txt file. Default is tab.
 #' @param seuratObject Optionally can upload a Seurat Object instead of a matrix/metadata file pair.
+#' @param DEG The filepath to the DEG file, if provided.
 #' @param control_name The name of the control sample, if applicable.
 #' @param mutant_name The name of the mutant sample, if applicable.
+#' @param pct_filter Percent threshold to filter expression of genes by. Default value of 0.1.
+#' @param perm_times The number of times to shuffle cluster alignments and calculate ligand/receptor averages for p-value calculation in raw interaction scoring. Default value of 1000.
 #' @param deletePE Whether or not to delete the percentage expression file after the pipeline is finished. Defaults to true.
 #' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
 #'
 #' @return NULL
 #'
 #' @export
-RunFlyPhone <- function(counts_fn = NULL, metadata_fn = NULL, DEG = NULL, pct_filter = 0.1, knowledgebase_version, perm_times = 1000, delimitor = "\t", seuratObject = NULL, control_name = NULL, mutant_name = NULL, deletePE = TRUE, base_output_dir = "") {
+RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = NULL, delimitor = "\t", seuratObject = NULL, DEG = NULL, control_name = NULL, mutant_name = NULL, pct_filter = 0.1, perm_times = 1000, deletePE = TRUE, base_output_dir = "") {
   # Preprocessing --------------------------------------------------------------
 
   # Boolean for checking if a DEG file is provided
