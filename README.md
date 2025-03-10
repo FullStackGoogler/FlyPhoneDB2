@@ -2,13 +2,15 @@
 
 ## Overview
 
-FlyPhone is a tool for analyzing cell-cell communications in *Drosophila*.
-
-//TODO: Add
+FlyPhone is a tool for analyzing cell-cell communications in *Drosophila Melanogaster* (fruit fly) single-cell RNA-sequencing datasets.
 
 ## Changes in V2
 
-//TODO: Finish
+- New functionality to investigate the differences of cell-cell communication events for multi-samples.
+- Core algorithm has been improved, resulting in significantly faster compute time.
+- Ligand-Receptor database has been greatly expanded to include 1,774 pairs with varying degrees of confidence, ranging between "Low", "Moderate", and "High".
+- Added more cell-cell communication visualizations, as well as improving on previous visualization types.
+- Added visualizations to analyze pathway activity by taking into consideration downstream reporter genes.
 
 ## Installation
 Installation is simple with the use of the [devtools](https://devtools.r-lib.org/) package.
@@ -75,10 +77,10 @@ These variables are required if there are multiple samples present
 
 The remaining arguments are optional and have default values:
 
-- `pct_filter` - Any genes with a percent expression across all cells below this threshold will be ignored in the analysis. Default value of 10% (0.1).
-- `perm_times` - The number of times to shuffle cluster alignments/calculate Ligand/Receptor averages for p-value calculation. Larger values may result in more accurate p-values but will take longer to run. Default value of 1,000.
-- `deletePE` - `RunFlyPhone()` generates a percentage expression file for later analysis. If desired, set this argument to `FALSE` to keep the file (which can be found in the `.temp` folder); otherwise, it will be deleted upon completion. Default value of `TRUE`.
-- `base_output_dir` - The output directory path for of `RunFlyPhone()`'s. Default value of `""`, or the current working directory.
+- `pct_filter` - Any genes with a percent expression across all cells below this threshold will be ignored in the analysis. Default value is 10% (0.1).
+- `perm_times` - The number of times to run the permutation test for generating the p-value scores that determine the significance of a Ligand-Receptor signaling pair for any given celltypes. Larger values may result in more accurate results, but will take longer to run. Default value is 1,000.
+- `deletePE` - `RunFlyPhone()` generates a percentage expression file for later analysis. If desired, set this argument to `FALSE` to keep the file (which can be found in the `.temp` folder); otherwise, it will be deleted upon completion. Default value is `TRUE`.
+- `base_output_dir` - The output directory path for of `RunFlyPhone()`'s. Default value is `""`, or the current working directory.
 
 ## Web-based version
 
@@ -88,7 +90,7 @@ In addition to the R package, we've also built a website with the following func
 - **Community Annotation -** A form that allows you to submit your own Ligand-Receptor annotation, where it will then be reviewed before being added to the knowledge base.
 - **Example Analysis -** To provide users with a better idea of what our tool returns, we've analyzed a fullbody scRNA-seq dataset from Yorkie tumor flies and have provided explanations.
 
-**Link:** //TODO: ADD PROD FLYPHONEDB2 HERE!
+**Link:** https://flyrnai.org/tools/fly_phone_2/web/
 
 ## Help/Contact
 
