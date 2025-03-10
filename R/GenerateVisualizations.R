@@ -60,19 +60,19 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     metadata <- metadata %>%
       rename("celltype" = cluster)
 
-    if("LibraryID" %in% colnames(metadata)) {
+    if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
-      metadata_split <- split(metadata, metadata$LibraryID)
+      metadata_split <- split(metadata, metadata$Condition)
     }
   } else {
     metadata <- read.csv(metadata_fn) %>%
       rename("celltype" = cluster)
 
-    if("LibraryID" %in% colnames(metadata)) {
+    if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
-      metadata_split <- split(metadata, metadata$LibraryID)
+      metadata_split <- split(metadata, metadata$Condition)
     }
 
     # Read in Counts
@@ -94,9 +94,9 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
 
     for(i in seq_along(counts_split)) {
       print("Generating heatmaps...")
-      HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
+      HeatmapSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$Condition, base_output_dir)
       print("Generaeting dotplots...")
-      DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$LibraryID, base_output_dir)
+      DotPlotSingleSample(counts_split[[i]], metadata_split[[i]], pathwayObj, metadata_split[[i]]$Condition, base_output_dir)
     }
   } else { # single sample
       print("Generating heatmaps...")

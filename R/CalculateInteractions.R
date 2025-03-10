@@ -44,10 +44,10 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     metadata <- metadata %>%
       rename("celltype" = cluster)
 
-    if("LibraryID" %in% colnames(metadata)) {
+    if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
-      metadata_split <- split(metadata, metadata$LibraryID)
+      metadata_split <- split(metadata, metadata$Condition)
     }
   } else {
     print("Reading in metadata...")
@@ -55,10 +55,10 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     metadata <- read.csv(metadata_fn) %>%
       rename("celltype" = cluster)
 
-    if("LibraryID" %in% colnames(metadata)) {
+    if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
-      metadata_split <- split(metadata, metadata$LibraryID)
+      metadata_split <- split(metadata, metadata$Condition)
     }
 
     print("Reading in counts...")
@@ -404,7 +404,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
 
 # Helper functions -------------------------------------------------------------
 
-# Splits the counts matrix by LibraryID if more than one sample is detected
+# Splits the counts matrix by Condition if more than one sample is detected
 splitCounts <- function(metadata_split, counts) {
   results <- list()
 
