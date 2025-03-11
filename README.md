@@ -65,7 +65,7 @@ These variables are required, regardless of the data uploaded:
 - `knowledgebase_version` - Specifies which version of FlyPhone's knowledge base (Ligand-Receptor pairs & Core components information) to use when running the pipeline. Valid options are:
 
     1. `Version 1` - Utilizes FlyPhone v1's version
-    2. `Version 2 All` - Utilizies FlyPhone v2's version
+    2. `Version 2 All` - Utilizes FlyPhone v2's version
     3. `Version 2 High` - Filters the L-R pairs to include those with a "High" rank
     4. `Version 2 High/Moderate` - Filters the L-R pairs to include those with either a "High" or "Moderate" rank
 
