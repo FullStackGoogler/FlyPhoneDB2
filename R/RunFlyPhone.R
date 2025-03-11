@@ -198,6 +198,7 @@ RunMultiAnalysis <- function(knowledgebase_version, counts_fn = NULL, metadata_f
   # Boolean for if multiple samples were detected
   isMultiSample <- length(results) > 1
 
+  dir.create(paste0(base_output_dir, "output/comparison"))
   for(name in sampleNames) {
     dir.create(paste0(base_output_dir, "output/", name, "/pathway-visualizations"))
   }
