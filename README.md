@@ -93,7 +93,3 @@ In addition to the R package, we've also built a website with the following func
 **Link:** https://flyrnai.org/tools/fly_phone_2/web/
 
 ![image](https://github.com/FullStackGoogler/FlyPhoneDB2/blob/master/man/figures/FPDB2_HomePage.png)
-
-## Help/Contact
-
-//TODO: Finish
