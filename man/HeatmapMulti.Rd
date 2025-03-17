@@ -7,7 +7,7 @@
 HeatmapMulti(output_dir = NULL, DEG, pathwayObj, pathways = NULL)
 }
 \arguments{
-\item{output_dir}{Directory to save generated heatmap(s) to. If unspecified, visualizations will not be saved and instead will simply be printed out.}
+\item{output_dir}{Directory to save generated visualizations to. If unspecified, visualizations will not be saved and instead will simply be printed out.}
 
 \item{DEG}{The file path for the differentially expressed genes file}
 

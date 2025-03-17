@@ -7,7 +7,7 @@
 DotPlotSingle(output_dir = NULL, seuratObj, pathwayObj, pathways = NULL)
 }
 \arguments{
-\item{output_dir}{Directory to save generated heatmap(s) to. If unspecified, visualizations will not be saved and instead will simply be printed out.}
+\item{output_dir}{Directory to save generated visualizations to. If unspecified, visualizations will not be saved and instead will simply be printed out.}
 
 \item{seuratObj}{A Seurat Object where counts = raw count data, and meta.data = metadata}
 

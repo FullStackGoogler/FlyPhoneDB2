@@ -199,9 +199,6 @@ RunMultiAnalysis <- function(knowledgebase_version, counts_fn = NULL, metadata_f
   isMultiSample <- length(results) > 1
 
   dir.create(paste0(base_output_dir, "output/comparison"))
-  for(name in sampleNames) {
-    dir.create(paste0(base_output_dir, "output/", name, "/pathway-visualizations"))
-  }
 
   # Perform Multi Sample Analysis
   AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name, base_output_dir)
