@@ -143,6 +143,6 @@ In addition to the R package, we've also built a website with the following func
 - **Community Annotation -** A form that allows you to submit your own Ligand-Receptor annotation, where it will then be reviewed before being added to the knowledge base.
 - **Example Analysis -** To provide users with a better idea of what our tool returns, we've analyzed a fullbody scRNA-seq dataset from Yorkie tumor flies and have provided explanations.
 
-**Link:** https://flyrnai.org/tools/fly_phone_2/web/
+**Link:** [https://flyrnai.org/tools/fly_phone_2/web/](https://www.flyrnai.org/tools/fly_phone_v2/web/)
 
 ![image](https://github.com/FullStackGoogler/FlyPhoneDB2/blob/master/man/figures/FPDB2_HomePage.png)
