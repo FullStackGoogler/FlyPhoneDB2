@@ -872,6 +872,10 @@ ChordDiagramSingleSample <- function(data_path, base_output_dir) {
     # Process only celltype of interest
     interaction_list_cell  <- interaction_list %>% filter(secretor == celltype & receptor != celltype)
 
+    if(nrow(interaction_list_cell) == 0) {
+        next  # Skip chord diagram creation if there are no results for a given celltype
+    }
+
     # Get summarized interaction scores
     sorting_order <- interaction_list_cell %>%
       group_by(receptor) %>%
