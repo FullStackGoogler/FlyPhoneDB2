@@ -16,6 +16,7 @@
 #' @keywords internal
 GenerateVisualizations <- function(counts_fn, metadata_fn, DEG_fn, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir) {
   if(doMultivis) {
+    doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject, base_output_dir)
     doMultiVisualization(DEG_fn, pathwayObj, base_output_dir)
   } else {
     doSingleVisualization(counts_fn, metadata_fn, pathwayObj, delimitor, seuratObject, base_output_dir)

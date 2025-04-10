@@ -66,6 +66,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
 
   # Only perform multi-sample analysis if a DEG file is provided
   if(isMultiSample & DEG_exists) {
+    AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
     AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name, base_output_dir) #FIXME: Might not actually use this variable at all
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
