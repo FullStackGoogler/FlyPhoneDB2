@@ -52,6 +52,11 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
 
     for(name in sampleNames) {
       dir.create(paste0(base_output_dir, "output/", name, "/pathway-visualizations"))
+      dir.create(paste0(base_output_dir, "output/", name, "/heatmaps"))
+      dir.create(paste0(base_output_dir, "output/", name, "/dotplots"))
+      dir.create(paste0(base_output_dir, "output/", name, "/chord-diagrams"))
+      dir.create(paste0(base_output_dir, "output/", name, "/circleplots"))
+      dir.create(paste0(base_output_dir, "output/", name, "/pathway-visualizations"))
     }
 
   } else {
