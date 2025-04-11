@@ -7,11 +7,17 @@
 doMultiVisualization(DEG, pathwayObj, base_output_dir)
 }
 \arguments{
+\item{DEG}{The differentially expressed gene object created in RunFlyPhone()}
+
 \item{pathwayObj}{The core component file as determined by the user inputted knowledgebase version}
 
 \item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory}
 
-\item{DEG_fn}{The file path for the differentially expressed genes file}
+\item{counts_fn}{The file path of the gene/cell matrix containing all expression counts}
+
+\item{metadata_fn}{The file path of the accompanying metadata file for counts}
+
+\item{seuratObject}{The file path to the Seurat Object formatted data}
 }
 \description{
 Generates the following visualizations:

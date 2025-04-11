@@ -7,7 +7,7 @@
 GenerateVisualizations(
   counts_fn,
   metadata_fn,
-  DEG_fn,
+  DEG,
   doMultivis,
   pathwayObj,
   delimitor,
@@ -20,7 +20,7 @@ GenerateVisualizations(
 
 \item{metadata_fn}{The file path of the accompanying metadata file for counts}
 
-\item{DEG_fn}{The file path for the differentially expressed genes file}
+\item{DEG}{The differentially expressed gene object created in RunFlyPhone()}
 
 \item{doMultivis}{Whether or not to generate comparison visualizations}
 

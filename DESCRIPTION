@@ -29,6 +29,8 @@ Depends:
     ggrepel,
     patchwork,
     ggpubr
+Remotes:
+    immunogenomics/presto
 LazyData: true
 URL: https://github.com/FullStackGoogler/FlyPhoneDB2
 BugReports: https://github.com/FullStackGoogler/FlyPhoneDB2/issues

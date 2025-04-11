@@ -80,8 +80,11 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
 
   doMultivis <- isMultiSample && DEG_exists
 
+  # Used for creating the log2fc multi-sample Heatmap; rest of comparison analysis still depends on a user uploaded DEG file
+  DEG_generated <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor)
+
   # Generate cell-cell communication visualizations
-  GenerateVisualizations(counts_fn, metadata_fn, DEG, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
+  GenerateVisualizations(counts_fn, metadata_fn, DEG_generated, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
 
   # Generate pathway summary visualizations
   print("Generating pathway visualizations...")
@@ -249,4 +252,53 @@ load_object <- function(file) {
   tmp <- new.env()
   load(file = file, envir = tmp)
   tmp[[ls(tmp)[1]]]
+}
+
+# Generate a DEG file for use in GenerateVisualizations/HeatMapMultiSample()
+# TODO: Could be used in the future to remove requirement of a DEG file for multi-analysis
+generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor) {
+  seuratObj <- NULL
+
+  if(!is.null(seuratObject) && file.exists(seuratObject)) {
+    seuratObj <- readRDS(seuratObject)
+  } else {
+    counts <- NULL
+    metadata <- read.csv(metadata_fn) %>%
+      rename("celltype" = cluster)
+
+    # Read in Counts
+    file_type = tools::file_ext(counts_fn)
+
+    if(identical(file_type, "txt")) { # Textfile
+      counts <- read.table(counts_fn, header = TRUE, sep = delimitor, row.names = 1, check.names = FALSE)
+    } else if(identical(file_type, "csv")) { # CSV file
+      counts <- read.csv(counts_fn, row.names = 1, check.names = FALSE)
+    } else {
+      stop("Unsupported filetype for the count matrix. Please upload either a .CSV or properly delimited .TXT file.")
+    }
+
+    seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
+  }
+
+  seuratObj <- NormalizeData(seuratObj)
+  seuratObj$cluster_treatment <- paste(seuratObj$cluster, seuratObj$Condition, sep = "_")
+  Idents(seuratObj) <- "cluster_treatment"
+  bigdf <- data.frame()
+
+  for (i in unique(seuratObj$cluster)){
+    foldchange_df <- FindMarkers(seuratObj,
+                                 ident.1 = paste(i, paste0(mutant_name), sep = "_"),
+                                 ident.2 = paste(i, paste0(control_name), sep = "_"),
+                                 only.pos = FALSE,
+                                 min.pct = -Inf,
+                                 logfc.threshold = -Inf)
+    foldchange_df <- foldchange_df %>% filter(p_val < 0.05) %>% filter(pct.1 >= 0.01 | pct.2 >= 0.01)
+    foldchange_df$condition <- paste0(mutant_name, "_vs_", control_name)
+    foldchange_df$cell_type <- i
+    foldchange_df <- foldchange_df %>%
+      tibble::rownames_to_column(var="gene")
+    bigdf <- rbind(bigdf, foldchange_df)
+  }
+
+  return(bigdf)
 }
