@@ -287,9 +287,16 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
   bigdf <- data.frame()
 
   for (i in unique(seuratObj$cluster)){
+    ident1 = paste(i, paste0(mutant_name), sep = "_")
+    ident2 = paste(i, paste0(control_name), sep = "_")
+
+    if(!(ident1 %in% Idents(seuratObj)) || !(ident2 %in% Idents(seuratObj))) {
+      next
+    }
+
     foldchange_df <- FindMarkers(seuratObj,
-                                 ident.1 = paste(i, paste0(mutant_name), sep = "_"),
-                                 ident.2 = paste(i, paste0(control_name), sep = "_"),
+                                 ident.1 = ident1,
+                                 ident.2 = ident2,
                                  only.pos = FALSE,
                                  min.pct = -Inf,
                                  logfc.threshold = -Inf)
