@@ -81,7 +81,10 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   doMultivis <- isMultiSample && DEG_exists
 
   # Used for creating the log2fc multi-sample Heatmap; rest of comparison analysis still depends on a user uploaded DEG file
-  DEG_generated <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor)
+  DEG_generated <- NULL
+  if(doMultivis) {
+    DEG_generated <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor)
+  }
 
   # Generate cell-cell communication visualizations
   GenerateVisualizations(counts_fn, metadata_fn, DEG_generated, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
@@ -263,8 +266,6 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
     seuratObj <- readRDS(seuratObject)
   } else {
     counts <- NULL
-    metadata <- read.csv(metadata_fn) %>%
-      rename("celltype" = cluster)
 
     # Read in Counts
     file_type = tools::file_ext(counts_fn)
