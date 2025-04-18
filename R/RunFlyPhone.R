@@ -77,7 +77,6 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
 
   # Generate DEG file if it doesn't exist, and multiple Conditions are detected, generate one
   if(isMultiSample && !DEG_exists) {
-    print("Making our own DEG File!")
     DEG_Obj <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor, TRUE)
   }
 
