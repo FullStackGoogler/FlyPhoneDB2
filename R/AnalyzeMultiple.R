@@ -187,7 +187,7 @@ AnalyzeMultiple <- function(results_list, DEG, pct_filter, control_name, mutant_
   writeData(wb, sheet = "Unchanged", unchanged_signaling)
 
   # Save the workbook
-  saveWorkbook(wb, paste0(base_output_dir, "output/comparison/results.xlsx"), overwrite = TRUE)
+  saveWorkbook(wb, paste0(base_output_dir, "output/comparison/combined-two-samples-filtered.xlsx"), overwrite = TRUE)
 
   print("AnalyzeMultiple() results saved!")
 

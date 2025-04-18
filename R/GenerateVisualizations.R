@@ -109,7 +109,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
   filelist <- list()
 
   for(name in sampleNames) {
-    filelist <- append(filelist, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"))
+    filelist <- append(filelist, paste0(base_output_dir, "output/", name, "/interaction-scores/interactions-list-format-filtered_", name, ".csv"))
   }
 
   for(curr_file in filelist) {
@@ -142,7 +142,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
 #'
 #' @keywords internal
 doMultiVisualization <- function(DEG, pathwayObj, base_output_dir) {
-  data_path <- paste0(base_output_dir, "output/comparison/results.xlsx")
+  data_path <- paste0(base_output_dir, "output/comparison/combined-two-samples-filtered.xlsx")
 
   print("Generating heatmaps...")
   HeatmapMultiSample(DEG, pathwayObj, base_output_dir)
@@ -501,7 +501,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("^.*interactions-list-format-filtered_(.*)\\.csv$", "\\1", data_path)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
@@ -839,7 +839,7 @@ ChordDiagramSingleSample <- function(data_path, base_output_dir) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", data_path)
+  sample_name <- gsub("^.*interactions-list-format-filtered_(.*)\\.csv$", "\\1", data_path)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- paste0(sample_name, "_")
 
@@ -1054,7 +1054,7 @@ InteractionStrengthSingleSample <- function(fileList, base_output_dir) {
   # Plot each dataset with common scales
   for (i in seq_along(fileList)) {
     file <- unlist(fileList[i])
-    sample_name <- gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", file)
+    sample_name <- gsub("^.*interactions-list-format-filtered_(.*)\\.csv$", "\\1", file)
     sample_name <- gsub("[_/, ]", "-", sample_name)
     scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))
     scores[is.na(scores)] <- 0

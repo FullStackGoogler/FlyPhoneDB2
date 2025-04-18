@@ -427,7 +427,7 @@ CirclePlotSingle <- function(output_dir = NULL, results, pathwayObj, pathways = 
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- if(filtered) gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", results) else gsub("^.*interaction-long_(.*)\\.csv$", "\\1", results)
+  sample_name <- if(filtered) gsub("^.*interactions-list-format-filtered_(.*)\\.csv$", "\\1", results) else gsub("^.*interactions-list-format-unfiltered_(.*)\\.csv$", "\\1", results)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- if(!sample_name == "") paste0(sample_name, "_") else ""
 
@@ -802,7 +802,7 @@ ChordDiagramSingle <- function(output_dir = NULL, results, cellTypes = NULL) {
   interaction_list$secretor <- gsub("/", "_", interaction_list$secretor) #FIXME? Mainly "ISC/EB" is problem
   interaction_list$receptor <- gsub("/", "_", interaction_list$receptor) #FIXME? Mainly "ISC/EB" is problem
 
-  sample_name <- if(filtered) gsub("^.*interaction-long-filtered_(.*)\\.csv$", "\\1", results) else gsub("^.*interaction-long_(.*)\\.csv$", "\\1", results)
+  sample_name <- if(filtered) gsub("^.*interactions-list-format-filtered_(.*)\\.csv$", "\\1", results) else gsub("^.*interactions-list-format-unfiltered_(.*)\\.csv$", "\\1", results)
   sample_name <- gsub("[_/, ]", "-", sample_name)
   name_extension <- if(!sample_name == "") paste0(sample_name, "_") else ""
 
@@ -1061,7 +1061,7 @@ InteractionStrengthSingle <- function(output_dir = NULL, resultFileList) {
     filtered = grepl("filtered", file)
     print(filtered)
     print(file)
-    sample_name <- if(filtered) gsub(".*/interaction-long-filtered_(.*)\\.csv$", "\\1", file) else gsub(".*/interaction-long_(.*)\\.csv$", "\\1", file)
+    sample_name <- if(filtered) gsub(".*/interactions-list-format-filtered_(.*)\\.csv$", "\\1", file) else gsub(".*/interactions-list-format-unfiltered_(.*)\\.csv$", "\\1", file)
     print(sample_name)
     sample_name <- gsub("[_/, ]", "-", sample_name)
     scores <- full_join(all_outgoing_scores_list[[i]], all_incoming_scores_list[[i]], by = c("secretor" = "receptor"))

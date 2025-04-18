@@ -101,8 +101,8 @@ AnalyzeSingle <- function(results_list, pct_filter, knowledgebase_version, base_
 
     print("Done!")
 
-    write.csv(score_df_filtered, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long-filtered_", name, ".csv"), row.names = FALSE)
-    write.csv(score_df, paste0(base_output_dir, "output/", name, "/interaction-scores/interaction-long_", name, ".csv"), row.names = FALSE)
+    write.csv(score_df_filtered, paste0(base_output_dir, "output/", name, "/interaction-scores/interactions-list-format-filtered_", name, ".csv"), row.names = FALSE)
+    write.csv(score_df, paste0(base_output_dir, "output/", name, "/interaction-scores/interactions-list-format-unfiltered_", name, ".csv"), row.names = FALSE)
 
     print(paste0("AnalyzeSingle() results for: ", name, " saved!"))
   }

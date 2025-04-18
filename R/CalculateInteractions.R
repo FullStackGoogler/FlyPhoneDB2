@@ -20,7 +20,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
   # Loading Data ---------------------------------------------------------------
 
   output_dir <- paste0(base_output_dir, "output")
-  output_base_filename <- "FlyPhone_interactions_raw_"
+  output_base_filename <- "interactions-table-format-unfiltered_"
 
   # Whether or not we analyse more than one dataset
   multiple_samples <- FALSE
