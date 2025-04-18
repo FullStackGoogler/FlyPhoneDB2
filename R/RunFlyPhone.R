@@ -24,6 +24,12 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   # Boolean for checking if a DEG file is provided
   DEG_exists <- !is.null(DEG) && file.exists(DEG)
 
+  DEG_Obj <- NULL
+
+  if(DEG_exists) {
+    DEG_Obj <- read.csv(DEF_fn, row.names = 1)
+  }
+
   # Load in annotation and pathway core component data depending on the knowledgebase version chosen
   annotationObj <- getAnnotationFile(knowledgebase_version)
   pathwayObj <- getPathwayFile(knowledgebase_version)
@@ -44,7 +50,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   isMultiSample <- length(results) > 1
 
   # Create the rest of the subfolders
-  if(isMultiSample & DEG_exists) {
+  if(isMultiSample) {
     dir.create(paste0(base_output_dir, "output/comparison"))
     dir.create(paste0(base_output_dir, "output/comparison/heatmaps"))
     dir.create(paste0(base_output_dir, "output/comparison/chord-diagrams"))
@@ -69,25 +75,29 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
     }
   }
 
-  # Only perform multi-sample analysis if a DEG file is provided
-  if(isMultiSample & DEG_exists) {
+  # Generate DEG file if it doesn't exist, and multiple Conditions are detected, generate one
+  if(isMultiSample && !DEG_exists) {
+    print("Making our own DEG File!")
+    DEG_Obj <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor, TRUE)
+  }
+
+  if(isMultiSample) {
     AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
-    AnalyzeMultiple(results, DEG, pct_filter, control_name, mutant_name, base_output_dir) #FIXME: Might not actually use this variable at all
+    AnalyzeMultiple(results, DEG_Obj, pct_filter, control_name, mutant_name, base_output_dir)
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
+    # 04/18/25: Any code related to multi-sample, single analysis, could probably be redundant since we decided last minute to always make a DEG file instead of making user upload one
     AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
   }
 
-  doMultivis <- isMultiSample && DEG_exists
-
-  # Used for creating the log2fc multi-sample Heatmap; rest of comparison analysis still depends on a user uploaded DEG file
-  DEG_generated <- NULL
-  if(doMultivis) {
-    DEG_generated <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor)
+  # Specially create a DEG object for the log2fc multi-sample Heatmap; filter only by pvalue, and NOT by log2fc values
+  DEG_heatmap <- NULL
+  if(isMultiSample) {
+    DEG_heatmap <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor, FALSE)
   }
 
   # Generate cell-cell communication visualizations
-  GenerateVisualizations(counts_fn, metadata_fn, DEG_generated, doMultivis, pathwayObj, delimitor, seuratObject, base_output_dir)
+  GenerateVisualizations(counts_fn, metadata_fn, DEG_heatmap, isMultiSample, pathwayObj, delimitor, seuratObject, base_output_dir)
 
   # Generate pathway summary visualizations
   print("Generating pathway visualizations...")
@@ -259,7 +269,7 @@ load_object <- function(file) {
 
 # Generate a DEG file for use in GenerateVisualizations/HeatMapMultiSample()
 # TODO: Could be used in the future to remove requirement of a DEG file for multi-analysis
-generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor) {
+generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor, filterLog2FC) {
   seuratObj <- NULL
 
   if(!is.null(seuratObject) && file.exists(seuratObject)) {
@@ -300,7 +310,17 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
                                  only.pos = FALSE,
                                  min.pct = -Inf,
                                  logfc.threshold = -Inf)
-    foldchange_df <- foldchange_df %>% filter(p_val < 0.05) %>% filter(pct.1 >= 0.01 | pct.2 >= 0.01)
+
+    if(filterLog2FC) {
+      foldchange_df <- foldchange_df %>%
+        filter(p_val < 0.05 & abs(avg_log2FC) > 0.38) %>%
+        filter(pct.1 >= 0.01 | pct.2 >= 0.01)
+    } else {
+      foldchange_df <- foldchange_df %>%
+        filter(p_val < 0.05) %>%
+        filter(pct.1 >= 0.01 | pct.2 >= 0.01)
+    }
+
     foldchange_df$condition <- paste0(mutant_name, "_vs_", control_name)
     foldchange_df$cell_type <- i
     foldchange_df <- foldchange_df %>%

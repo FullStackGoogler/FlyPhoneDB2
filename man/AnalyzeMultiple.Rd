@@ -6,7 +6,7 @@
 \usage{
 AnalyzeMultiple(
   results_list,
-  DEF_fn,
+  DEG,
   pct_filter,
   control_name,
   mutant_name,
@@ -16,6 +16,8 @@ AnalyzeMultiple(
 \arguments{
 \item{results_list}{Results from CalculateInteractions()}
 
+\item{DEG}{Differentially expressed genes object}
+
 \item{pct_filter}{Percentage threshold to filter generated Percentage_Expression.csv file for relevant genes}
 
 \item{control_name}{The name of the control sample, if applicable.}
@@ -23,8 +25,6 @@ AnalyzeMultiple(
 \item{mutant_name}{The name of the mutant sample, if applicable.}
 
 \item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
-
-\item{DEG_fn}{Differentially expressed genes file path}
 }
 \value{
 Excel File

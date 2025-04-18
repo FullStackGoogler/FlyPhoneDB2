@@ -3,7 +3,7 @@
 #' Analyzes calculated interaction scores for multiple samples by filtering by both percentage expression and the DEG file
 #'
 #' @param results_list Results from CalculateInteractions()
-#' @param DEG_fn Differentially expressed genes file path
+#' @param DEG Differentially expressed genes object
 #' @param pct_filter Percentage threshold to filter generated Percentage_Expression.csv file for relevant genes
 #' @param control_name The name of the control sample, if applicable.
 #' @param mutant_name The name of the mutant sample, if applicable.
@@ -12,7 +12,7 @@
 #' @return Excel File
 #'
 #' @keywords internal
-AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, mutant_name, base_output_dir) {
+AnalyzeMultiple <- function(results_list, DEG, pct_filter, control_name, mutant_name, base_output_dir) {
   # TODO: This allows for any amount, tho it seems we only need two (control/mutant).
   long_results <- ConvertToLongTable(results_list)
 
@@ -31,7 +31,7 @@ AnalyzeMultiple <- function(results_list, DEF_fn, pct_filter, control_name, muta
   print("Reading in DEG file...")
 
   # DEGS #
-  degs <- read.csv(DEF_fn, row.names = 1)
+  degs <- DEG
 
   print("Reading in percentage expression file...")
 
