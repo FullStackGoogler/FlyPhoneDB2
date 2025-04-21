@@ -58,8 +58,12 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
     metadata <- rownames_to_column(metadata, "X")
     counts <- seuratObj[["RNA"]]$counts
 
-    metadata <- metadata %>%
-      rename("celltype" = cluster)
+    if(ncol(metadata) == 2) {
+      colnames(metadata)[2] <- "celltype"
+    } else if(ncol(metadata) > 2) {
+      metadata <- metadata %>%
+        rename("celltype" = cluster)
+    }
 
     if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
@@ -67,8 +71,12 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
       metadata_split <- split(metadata, metadata$Condition)
     }
   } else {
-    metadata <- read.csv(metadata_fn) %>%
-      rename("celltype" = cluster)
+    if(ncol(metadata) == 2) {
+      colnames(metadata)[2] <- "celltype"
+    } else if(ncol(metadata) > 2) {
+      metadata <- metadata %>%
+        rename("celltype" = cluster)
+    }
 
     if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")

@@ -41,8 +41,12 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
     metadata <- rownames_to_column(metadata, "X")
     counts <- seuratObj[["RNA"]]$counts
 
-    metadata <- metadata %>%
-      rename("celltype" = cluster)
+    if(ncol(metadata) == 2) {
+      colnames(metadata)[2] <- "celltype" # This only exists so that the old FlyPhone V1 website example file works
+    } else if(ncol(metadata) > 2) {
+      metadata <- metadata %>%
+        rename("celltype" = cluster)
+    }
 
     if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
@@ -52,8 +56,14 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
   } else {
     print("Reading in metadata...")
 
-    metadata <- read.csv(metadata_fn) %>%
-      rename("celltype" = cluster)
+    metadata <- read.csv(metadata_fn)
+
+    if(ncol(metadata) == 2) {
+      colnames(metadata)[2] <- "celltype"
+    } else if(ncol(metadata) > 2) {
+      metadata <- metadata %>%
+        rename("celltype" = cluster)
+    }
 
     if("Condition" %in% colnames(metadata)) {
       print("Splitting metadata...")
