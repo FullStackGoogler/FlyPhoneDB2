@@ -27,7 +27,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   DEG_Obj <- NULL
 
   if(DEG_exists) {
-    DEG_Obj <- read.csv(DEF_fn, row.names = 1)
+    DEG_Obj <- read.csv(DEG, row.names = 1)
   }
 
   # Load in annotation and pathway core component data depending on the knowledgebase version chosen
