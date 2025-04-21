@@ -112,9 +112,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   outputType_filepath <- paste0(base_output_dir, "output_type.txt")
 
   # Create a textfile specifying the type of analysis done
-  if(isMultiSample & DEG_exists) {
-    write.table("Multi_DEG", outputType_filepath, row.names = FALSE, col.names = FALSE)
-  } else if (isMultiSample & !DEG_exists) {
+  if(isMultiSample) {
     write.table("Multi", outputType_filepath, row.names = FALSE, col.names = FALSE)
   } else {
     write.table("Single", outputType_filepath, row.names = FALSE, col.names = FALSE)
