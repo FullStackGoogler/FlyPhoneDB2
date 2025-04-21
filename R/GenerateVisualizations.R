@@ -71,6 +71,8 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
       metadata_split <- split(metadata, metadata$Condition)
     }
   } else {
+    metadata <- read.csv(metadata_fn)
+
     if(ncol(metadata) == 2) {
       colnames(metadata)[2] <- "celltype"
     } else if(ncol(metadata) > 2) {
