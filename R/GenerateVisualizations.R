@@ -352,6 +352,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
   colnames(interaction_list_mutant)[6] <- "mutant_score"
 
   # Assign color to each cell type
+  # Assign color to each cell type
   paste0(unique(append(interaction_df$secretor, interaction_df$receptor)))
 
   # Set colors of clusters
@@ -359,6 +360,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
 
   celltype_count <- length(sort(unique(append(interaction_df$secretor, interaction_df$receptor))))
 
+  # TODO: There is probably some edge case dataset in the future where two conditions will be off by just enough for one sample to use polychrome and the other to use varibow, might have to consider how to keep consistent coloring between cells across samples in that case
   if(celltype_count < 35) { # Use polychrome palette; up to 34 colors
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
@@ -374,8 +376,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
     # Create a new workbook for the summed interaction scores
     wb <- createWorkbook()
 
-    # Loop through each pathway
-    for (pathway in pathways) {
+    for(pathway in pathways) {
       cat(paste0(pathway, "\n"))
 
       # Process mutant interactions
@@ -415,7 +416,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
         tidyr::separate(variable, c("sender", "receiver"), ">") %>%
         mutate(pair = if_else(sender < receiver, paste0(sender, "/", receiver), paste0(receiver, "/", sender))) %>%
         group_by(pair) %>%
-        filter(score_difference == max(score_difference, na.rm = TRUE)) %>% #There was 1 warning in `filter()`. In ℹ In argument: `score_difference == max(score_difference)`. Caused by warning in `max()`: ! no non-missing arguments to max; returning -Inf
+        filter(score_difference == max(score_difference)) %>%
         ungroup() %>%
         select(-pair) %>%
         filter(score_difference != 0)
@@ -429,6 +430,15 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
 
       colnames(net) <- c("sender", "receiver", "n")
       net$n <- as.numeric(net$n)
+
+      # This code chunk may be changed to only show the top 15 signals (uncomment slice_head(n=15) %>%)
+      top_val <- net %>%
+        arrange(desc(abs(n))) %>%
+        # slice_head(n = 50) %>%
+        pull(n)
+
+      net <- net %>%
+        mutate(n = ifelse(n %in% top_val, n, 0))
 
       if(sum(net$n) == 0){
         next
@@ -448,28 +458,61 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
       coords <- layout_(g, in_circle())
       coords_scale <- scale(coords)
 
-      V(g)$size <- 20
-      V(g)$color <- color_palette[V(g)$name]  # Use the corrected color palette
+      # NEW CODE #
+      V(g)$size <- 8  # Reduce the size of the circles
+      V(g)$color <- color_palette[V(g)$name]
       V(g)$label.color <- "black"
       V(g)$label.cex <- 0.8
+      # END OF NEW CODE #
+
       if (max(E(g)$weight) == min(E(g)$weight)) {
         E(g)$width <- 1
       } else {
-        E(g)$width <- 0.5 + abs(E(g)$weight) / max(abs(E(g)$weight)) * 4
+        # E(g)$width <- 0.25 + abs(E(g)$weight) / max(abs(E(g)$weight)) * 4 # THIS IS DEFAULT CODE
+        E(g)$width <- 0.25 + abs(E(g)$weight) / 1.2 # CODE FOR MAKING PLOTS COMPARABLE
+
       }
-      E(g)$arrow.width <- 3
+      E(g)$arrow.width <- 1.4 # 1.4
       E(g)$label.color <- 'black'
 
-      # Plot setup and save
       png(file = paste0(output_dir, gsub("[_/, ]", "-", celltype), "_", gsub("[_/, ]", "-", pathway), ".png"),
           width = 10,
           height = 10,
           units = "in",
           res = 300)
 
-      plot(g, edge.curved = 0.2, vertex.shape = 'circle',
-           layout = coords_scale, margin = 0.2, edge.arrow.size = 0.5,
-           vertex.frame.color = "white", label = FALSE)
+      plot(g,
+           edge.curved = 0.2,  # Curvature of edges
+           vertex.shape = 'circle',
+           layout = coords,
+           margin = 0.5,
+           edge.arrow.size = 0.5,
+           vertex.frame.color = "white",
+           vertex.size = V(g)$size,  # Use updated smaller size
+           vertex.label.cex = 1,  # Size of the labels
+           vertex.label.color = "black",
+           vertex.label = "")  # Color of the labels
+
+      x = coords[,1]*1.1
+      y = coords[,2]*1.1
+
+      for(i in 1:length(x)) {
+        theta <- atan2(y[i], x[i])  # Replace atan() with atan2()
+        angle_deg <- theta * 180/pi
+
+        srt <- angle_deg
+        if(angle_deg > 90 || angle_deg < -90) {
+          srt <- srt + 180  # Flip label
+        }
+
+        if(cos(theta) > 0) {
+          curr_adj <- c(0, 0.5)  # Left-aligned - right side
+        } else {
+          curr_adj <- c(1, 0.5)  # Right-aligned - left side
+        }
+
+        text(x = x[i], y = y[i], labels = V(g)$name[i], adj = curr_adj, pos = NULL, cex = 0.7, col = "black", srt = srt, xpd = TRUE, font = 2)
+      }
 
       dev.off()
 
@@ -528,13 +571,13 @@ CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
   celltypes <- gsub("/", "_", celltypes) #FIXME? Mainly "ISC/EB" is problem
 
   # Create a new workbook for the summed interaction scores
-  for (x in celltypes){
+  for(x in celltypes) {
 
     celltype <- x
 
     wb <- createWorkbook()
 
-    for (pathway in pathways) {
+    for(pathway in pathways) {
 
       cat(paste0(pathway, "\n"))
 
@@ -553,7 +596,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
       edge.curved=0.5
       shape='circle'
       layout=in_circle()
-      vertex.size=20
+      vertex.size=8 # Change to be smaller
       margin=0.2
       vertex.label.cex=0.8
       vertex.label.color='black'
@@ -646,7 +689,28 @@ CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
 
       plot(g,edge.curved=0.2,vertex.shape=shape,
            layout=coords_scale,margin=margin,edge.arrow.size=0.5, vertex.frame.color="white"
-           , label=FALSE)
+           , vertex.label = "")
+
+      x = coords[,1]*1.1
+      y = coords[,2]*1.1
+
+      for(i in 1:length(x)) {
+        theta <- atan2(y[i], x[i])  # Replace atan() with atan2()
+        angle_deg <- theta * 180/pi
+
+        srt <- angle_deg
+        if(angle_deg > 90 || angle_deg < -90) {
+          srt <- srt + 180  # Flip label
+        }
+
+        if(cos(theta) > 0) {
+          curr_adj <- c(0, 0.5)  # Left-aligned - right side
+        } else {
+          curr_adj <- c(1, 0.5)  # Right-aligned - left side
+        }
+
+        text(x = x[i], y = y[i], labels = V(g)$name[i], adj = curr_adj, pos = NULL, cex = 0.7, col = "black", srt = srt, xpd = TRUE, font = 2)
+      }
 
       dev.off()
 
