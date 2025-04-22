@@ -1,6 +1,12 @@
 #' Pathway Expression Level Visualization Generator
 #'
-#' Generates visualizations for Pathway expression levels in each given sample
+#' Generates visualizations for Pathway expression levels in each given sample:
+#'
+#' 1. Ligand Heatmap - Average Normalized Expression value for each ligand gene in each cell type
+#' 2. Receptor Heatmap - Average Normalized Expression value for each receptor gene in each cell type
+#' 3. Reporter Heatmap - Average Normalized Expression value for each reporter gene in each cell type
+#' 4. Expression Dot Plot - Finds and plots the Max Average Normalized Expression values for both receptor
+#'                          and reporter genes in each pathway for each cell type
 #'
 #' @param base_output_dir The directory for FlyPhone to send all result files to. Defaults to the current working directory.
 #'

@@ -10,6 +10,15 @@ PathwayELVisualizations(base_output_dir)
 \item{base_output_dir}{The directory for FlyPhone to send all result files to. Defaults to the current working directory.}
 }
 \description{
-Generates visualizations for Pathway expression levels in each given sample
+Generates visualizations for Pathway expression levels in each given sample:
+}
+\details{
+\enumerate{
+\item Ligand Heatmap - Average Normalized Expression value for each ligand gene in each cell type
+\item Receptor Heatmap - Average Normalized Expression value for each receptor gene in each cell type
+\item Reporter Heatmap - Average Normalized Expression value for each reporter gene in each cell type
+\item Expression Dot Plot - Finds and plots the Max Average Normalized Expression values for both receptor
+and reporter genes in each pathway for each cell type
+}
 }
 \keyword{internal}
