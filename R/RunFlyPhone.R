@@ -277,10 +277,7 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
     metadata <- read.csv(metadata_fn)
 
     if(ncol(metadata) == 2) {
-      colnames(metadata)[2] <- "celltype"
-    } else if(ncol(metadata) > 2) {
-      metadata <- metadata %>%
-        rename("celltype" = cluster)
+      colnames(metadata)[2] <- "cluster"
     }
 
     # Read in Counts
