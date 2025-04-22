@@ -78,6 +78,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
   # Generate DEG file if it doesn't exist, and multiple Conditions are detected, generate one
   if(isMultiSample && !DEG_exists) {
     DEG_Obj <- generateDEG(counts_fn, metadata_fn, seuratObject, control_name, mutant_name, delimitor, TRUE)
+    print("DEG objected generated...")
   }
 
   if(isMultiSample) {
@@ -85,7 +86,7 @@ RunFlyPhone <- function(knowledgebase_version, counts_fn = NULL, metadata_fn = N
     AnalyzeMultiple(results, DEG_Obj, pct_filter, control_name, mutant_name, base_output_dir)
   } else {
     # Single-sample analysis OR Multi-sample analysis WITHOUT a DEG file provided
-    # 04/18/25: Any code related to multi-sample, single analysis, could probably be redundant since we decided last minute to always make a DEG file instead of making user upload one
+    # 04/18/25: Any code related to multi-sample single analysis, could probably be redundant since we decided last minute to always make a DEG file instead of making user upload one
     AnalyzeSingle(results, pct_filter, knowledgebase_version, base_output_dir)
   }
 
