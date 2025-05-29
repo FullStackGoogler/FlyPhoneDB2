@@ -243,7 +243,7 @@ HeatmapSingleSample <- function(counts, metadata, pathwayObj, sample_name, base_
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
   } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = celltype_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
 
   #names(polychrome_pal) = sort(unique(seuratObj$cluster))
@@ -375,7 +375,7 @@ CirclePlotMultiSample <- function(data_path, pathwayObj, base_output_dir) {
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
   } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = celltype_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
   names(color_palette) <- sort(unique(append(interaction_df$secretor, interaction_df$receptor)))
   celltypes <- names(color_palette)
@@ -573,7 +573,7 @@ CirclePlotSingleSample <- function(pathwayObj, data_path, base_output_dir) {
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
   } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = celltype_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
   names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
   #celltypes <- names(polychrome_pal)
@@ -769,7 +769,7 @@ ChordDiagramMultiSample <- function(data_path, pathwayObj, base_output_dir) {
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
   } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = celltype_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
   names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
 
@@ -929,7 +929,7 @@ ChordDiagramSingleSample <- function(data_path, base_output_dir) {
     color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = 36, palette = "polychrome") # Save palette information
     color_palette <- color_palette[3:36]
   } else { # Too many celltypes, use varibow instead
-    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = cell_type_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
+    color_palette <- scCustomize::DiscretePalette_scCustomize(num_colors = celltype_count, palette = "varibow", shuffle_pal = TRUE) # Save palette information
   }
   names(color_palette) <- sort(unique(append(interaction_list$secretor, interaction_list$receptor)))
   #celltypes <- names(polychrome_pal)
