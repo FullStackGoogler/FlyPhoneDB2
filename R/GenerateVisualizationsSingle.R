@@ -165,12 +165,6 @@ DotPlotSingle <- function(output_dir = NULL, seuratObj, pathwayObj, pathways = N
 
   seuratObj <- NormalizeData(seuratObj)
 
-  # Set colors of clusters
-  ncelltype <- length(unique(seuratObj$cluster))
-  polychrome_pal <- scCustomize::DiscretePalette_scCustomize(num_colors = (ncelltype+2), palette = "polychrome")
-  polychrome_pal <- polychrome_pal[3:(ncelltype+2)]
-  names(polychrome_pal) = sort((unique(seuratObj$cluster)))
-
   for(signaling_path in interested_pathways) {
     signaling_subset <- pathwayObj %>% filter(pathway == signaling_path) %>% select(2,4)
     signaling_subset$role <- as.factor(signaling_subset$role)
