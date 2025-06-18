@@ -64,3 +64,25 @@
 #' @docType data
 #' @source Manually curated
 "pathway_components_v2"
+
+
+#' Sample data: example_seurat_obj
+#'
+#' A down-sampled Seurat object (Day 5 Yki snRNA-seq data) for demonstrating package functionality.
+#'
+#' @format ## `Seurat Object`
+#' \describe{
+#'   \item{features}{16,443 genes}
+#'   \item{samples}{4,187 cells}
+#'   \item{assays}{\strong{RNA} (raw counts and normalized data)}
+#'   \item{layers}{\strong{counts}: unnormalized expression counts; \strong{data}: log-normalized expression}
+#'   \item{reductions}{\strong{umap}: UMAP dimensional reduction calculated}
+#' }
+#' @source A Seurat object generated from Day 5 Yki snRNA-seq data using 10 randomly selected clusters downsampled to 500 cells in each cluster
+#'
+#' @examples
+#' data(example_seurat_obj)
+#' example_seurat_obj
+#' dim(example_seurat_obj)
+#' head(example_seurat_obj@meta.data)
+"example_seurat_obj"
