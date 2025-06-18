@@ -65,7 +65,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
         rename("celltype" = cluster)
     }
 
-    if("Condition" %in% colnames(metadata)) {
+    if( ("Condition" %in% colnames(metadata)) && ( length(unique(metadata$Condition)) > 1 ) ) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
       metadata_split <- split(metadata, metadata$Condition)
@@ -80,7 +80,7 @@ doSingleVisualization <- function(counts_fn, metadata_fn, pathwayObj, delimitor,
         rename("celltype" = cluster)
     }
 
-    if("Condition" %in% colnames(metadata)) {
+    if( ("Condition" %in% colnames(metadata)) && ( length(unique(metadata$Condition)) > 1 ) ) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
       metadata_split <- split(metadata, metadata$Condition)
