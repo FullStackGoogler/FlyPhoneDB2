@@ -48,7 +48,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
         rename("celltype" = cluster)
     }
 
-    if("Condition" %in% colnames(metadata)) {
+    if( ("Condition" %in% colnames(metadata)) & (length(unique(metadata$Condition)) > 1) ) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
       metadata_split <- split(metadata, metadata$Condition)
@@ -65,7 +65,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
         rename("celltype" = cluster)
     }
 
-    if("Condition" %in% colnames(metadata)) {
+    if( ("Condition" %in% colnames(metadata)) & (length(unique(metadata$Condition)) > 1) ) {
       print("Splitting metadata...")
       multiple_samples <- TRUE
       metadata_split <- split(metadata, metadata$Condition)
