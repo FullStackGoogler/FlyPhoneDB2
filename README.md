@@ -9,7 +9,7 @@ FlyPhone is a tool for analyzing cell-cell communications in *Drosophila Melanog
 - Previous standalone R program is now a R package!
 - New functionality to investigate the differences of cell-cell communication events for multi-samples.
 - Core algorithm has been improved, resulting in significantly faster compute times.
-- Ligand-Receptor database has been greatly expanded to include ~1,750 pairs with varying degrees of confidence, ranging between "Low", "Moderate", and "High".
+- Ligand-Receptor (L-R) database has been greatly expanded to include 1804 L-R pairs with varying degrees of confidence, ranging between "low", "moderate", and "high".
 - Added more cell-cell communication visualizations, as well as improving on previous visualization types.
 - Added visualizations to analyze pathway activity by taking into consideration downstream reporter genes.
 
@@ -18,7 +18,7 @@ Installation is simple with the use of the [devtools](https://devtools.r-lib.org
 
 ```R
 # devtools package should be installed and loaded prior to running this command
-install_github('FullStackGoogler/FlyPhoneDB2')
+install_github('FullStackGoogler/FlyPhoneDB2', force = TRUE)
 ```
 
 ## Usage
