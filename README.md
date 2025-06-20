@@ -160,7 +160,8 @@ In addition to the R package, we've also built a website with the following func
 
 ## Citing FlyPhoneDB2
 
-If you use FlyPhoneDB2 please cite the following papers:
+If you use FlyPhoneDB/FlyPhoneDB2 please cite the respective papers:
 
 FlyPhoneDB: [FlyPhoneDB: an integrated web-based resource for cell–cell communication prediction in Drosophila](https://doi.org/10.1093/genetics/iyab235)
-FlyPhoneDB2L [FlyPhoneDB2: A computational framework for analyzing cell-cell communication in Drosophila scRNA-seq data integrating AlphaFold-multimer predictions](https://www.flyrnai.org/tools/fly_phone_v2/web/)
+
+FlyPhoneDB2: [FlyPhoneDB2: A computational framework for analyzing cell-cell communication in Drosophila scRNA-seq data integrating AlphaFold-multimer predictions](https://www.flyrnai.org/tools/fly_phone_v2/web/)
