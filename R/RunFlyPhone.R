@@ -272,6 +272,7 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
 
   if(!is.null(seuratObject) && file.exists(seuratObject)) {
     seuratObj <- readRDS(seuratObject)
+
   } else {
     counts <- NULL
 
@@ -295,6 +296,7 @@ generateDEG <- function(counts_fn, metadata_fn, seuratObject, control_name, muta
     seuratObj <- CreateSeuratObject(counts = counts, meta.data = metadata)
   }
 
+  seuratObj$cluster <- as.character(seuratObj$cluster)
   seuratObj <- NormalizeData(seuratObj)
   seuratObj$cluster_treatment <- paste(seuratObj$cluster, seuratObj$Condition, sep = "_")
   Idents(seuratObj) <- "cluster_treatment"

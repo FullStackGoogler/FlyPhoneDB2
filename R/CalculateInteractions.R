@@ -47,6 +47,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
       metadata <- metadata %>%
         rename("celltype" = cluster)
     }
+    metadata$celltype <- as.character(metadata$celltype) # if user is using numeric clusters
 
     if( ("Condition" %in% colnames(metadata)) & (length(unique(metadata$Condition)) > 1) ) {
       print("Splitting metadata...")
@@ -64,6 +65,7 @@ CalculateInteractions <- function(counts_fn, metadata_fn, LR_pairs, pathway_comp
       metadata <- metadata %>%
         rename("celltype" = cluster)
     }
+    metadata$celltype <- as.character(metadata$celltype) # if user is using numeric clusters
 
     if( ("Condition" %in% colnames(metadata)) & (length(unique(metadata$Condition)) > 1) ) {
       print("Splitting metadata...")
