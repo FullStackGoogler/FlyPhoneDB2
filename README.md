@@ -164,4 +164,4 @@ If you use FlyPhoneDB/FlyPhoneDB2 please cite the respective papers:
 
 FlyPhoneDB: [FlyPhoneDB: an integrated web-based resource for cell–cell communication prediction in Drosophila](https://doi.org/10.1093/genetics/iyab235)
 
-FlyPhoneDB2: [FlyPhoneDB2: A computational framework for analyzing cell-cell communication in Drosophila scRNA-seq data integrating AlphaFold-multimer predictions](https://www.flyrnai.org/tools/fly_phone_v2/web/)
+FlyPhoneDB2: [FlyPhoneDB2: A computational framework for analyzing cell-cell communication in Drosophila scRNA-seq data integrating AlphaFold-multimer predictions](https://doi.org/10.1016/j.csbj.2025.06.032)
